@@ -4,6 +4,8 @@ import NotAuthorizedLayout from '@/app/components/NotAuthorizedLayout';
 import { useEffect, useState } from 'react';
 import useCompanyProfileContract from '@/app/hooks/useCompanyProfileContract';
 import { useRouter } from 'next/router';
+import { Button } from '@mui/material';
+import Link from 'next/link';
 
 export default function CompanyDetail() {
   const router = useRouter();
@@ -12,11 +14,11 @@ export default function CompanyDetail() {
   } = useWeb3Context() as IWeb3Context;
   const { id = '' } = router.query;
 
-  console.log(id);
   const contract = useCompanyProfileContract(Array.isArray(id) ? id[0] : id);
 
   const [companyName, setCompanyName] = useState<string>('');
   const [companyWebsiteUrl, setCompanyWebsiteUrl] = useState<string>('');
+  const [activeJobPostings, setActiveJobPostings] = useState<any[]>([]);
 
   useEffect(() => {
     const getCompanyProfile = async () => {
@@ -25,8 +27,11 @@ export default function CompanyDetail() {
       }
       const name = await contract.getCompanyName();
       const websiteUrl = await contract.getWebsiteUrl();
+      const fetchedActiveJobPostings = await contract.listActiveJobPostings();
+      console.log(fetchedActiveJobPostings);
       setCompanyName(name);
       setCompanyWebsiteUrl(websiteUrl);
+      setActiveJobPostings(fetchedActiveJobPostings);
     };
 
     getCompanyProfile();
@@ -44,6 +49,25 @@ export default function CompanyDetail() {
         </Grid>
         <Grid item display="flex" justifyContent="center" xs={12}>
           {companyWebsiteUrl}
+        </Grid>
+        <Grid item>
+          <h2>Job Postings</h2>
+        </Grid>
+        <Grid container>
+          {activeJobPostings.map((jobPosting) => (
+            <Grid item xs={12} key={jobPosting.address}>
+              <Link href={`/company/${id}/postings/${jobPosting.address}`}>
+                {jobPosting}
+              </Link>
+            </Grid>
+          ))}
+        </Grid>
+        <Grid item>
+          <Link href={`/company/${id}/postings/new`}>
+            <Button variant="contained" color="primary">
+              Post Job
+            </Button>
+          </Link>
         </Grid>
       </Grid>
     </main>

@@ -2,33 +2,23 @@
   {
     "inputs": [
       {
-        "internalType": "address payable",
-        "name": "_developerAddress",
-        "type": "address"
-      },
-      {
         "internalType": "address",
         "name": "_eventEmitterAddress",
         "type": "address"
       },
       {
         "internalType": "address",
-        "name": "_owner",
+        "name": "_applicant",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_jobPosting",
         "type": "address"
       },
       {
         "internalType": "string",
-        "name": "_name",
-        "type": "string"
-      },
-      {
-        "internalType": "string",
-        "name": "_websiteUrl",
-        "type": "string"
-      },
-      {
-        "internalType": "string",
-        "name": "_logoCid",
+        "name": "_resumeCid",
         "type": "string"
       }
     ],
@@ -40,14 +30,61 @@
     "type": "fallback"
   },
   {
-    "inputs": [
+    "inputs": [],
+    "name": "acceptOffer",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "applicant",
+    "outputs": [
       {
-        "internalType": "uint256",
+        "internalType": "address",
         "name": "",
-        "type": "uint256"
+        "type": "address"
       }
     ],
-    "name": "activeJobPostingAddresses",
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "applicationStatus",
+    "outputs": [
+      {
+        "internalType": "enum JobApplication.ApplicationStatus",
+        "name": "",
+        "type": "uint8"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "companyProfileOwner",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "declineOffer",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "getApplicant",
     "outputs": [
       {
         "internalType": "address",
@@ -61,47 +98,80 @@
   {
     "inputs": [
       {
-        "internalType": "string",
-        "name": "_title",
-        "type": "string"
-      },
+        "internalType": "enum JobApplication.ApplicationStatus",
+        "name": "_status",
+        "type": "uint8"
+      }
+    ],
+    "name": "getApplicationStatusString",
+    "outputs": [
       {
         "internalType": "string",
-        "name": "_jobDescriptionIpfsHash",
+        "name": "",
         "type": "string"
-      },
+      }
+    ],
+    "stateMutability": "pure",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "getCurrentApplicationStatus",
+    "outputs": [
       {
         "internalType": "string",
-        "name": "_country",
+        "name": "",
         "type": "string"
-      },
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "getJobPosting",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "getResume",
+    "outputs": [
       {
         "internalType": "string",
-        "name": "_city",
+        "name": "",
         "type": "string"
-      },
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "isApplicationActive",
+    "outputs": [
       {
         "internalType": "bool",
-        "name": "_isRemote",
+        "name": "",
         "type": "bool"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_totalHiringCount",
-        "type": "uint256"
       }
     ],
-    "name": "createJobPosting",
-    "outputs": [],
-    "stateMutability": "payable",
+    "stateMutability": "view",
     "type": "function"
   },
   {
     "inputs": [],
-    "name": "decentralHireAddress",
+    "name": "jobPosting",
     "outputs": [
       {
-        "internalType": "address",
+        "internalType": "contract JobPosting",
         "name": "",
         "type": "address"
       }
@@ -111,137 +181,21 @@
   },
   {
     "inputs": [],
-    "name": "getCompanyName",
-    "outputs": [
-      {
-        "internalType": "string",
-        "name": "",
-        "type": "string"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "getLogoCid",
-    "outputs": [
-      {
-        "internalType": "string",
-        "name": "",
-        "type": "string"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "getWebsiteUrl",
-    "outputs": [
-      {
-        "internalType": "string",
-        "name": "",
-        "type": "string"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "listActiveJobPostings",
-    "outputs": [
-      {
-        "internalType": "contract JobPosting[]",
-        "name": "",
-        "type": "address[]"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "logoCid",
-    "outputs": [
-      {
-        "internalType": "string",
-        "name": "",
-        "type": "string"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "name",
-    "outputs": [
-      {
-        "internalType": "string",
-        "name": "",
-        "type": "string"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "owner",
-    "outputs": [
-      {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "string",
-        "name": "_name",
-        "type": "string"
-      }
-    ],
-    "name": "setCompanyName",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "string",
-        "name": "_logoCid",
-        "type": "string"
-      }
-    ],
-    "name": "setLogoCid",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "string",
-        "name": "_websiteUrl",
-        "type": "string"
-      }
-    ],
-    "name": "setWebsiteUrl",
+    "name": "onReceiveHire",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
   },
   {
     "inputs": [],
-    "name": "websiteUrl",
+    "name": "onReceiveOffer",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "resumeCid",
     "outputs": [
       {
         "internalType": "string",
