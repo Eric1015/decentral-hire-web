@@ -1,4 +1,10 @@
-import { Alert, FormControl, Snackbar, TextField } from '@mui/material';
+import Typography from '@mui/material/Typography';
+import Box from '@mui/material/Box';
+import Container from '@mui/material/Container';
+import TextField from '@mui/material/TextField';
+import Snackbar from '@mui/material/Snackbar';
+import Alert from '@mui/material/Alert';
+import Grid from '@mui/material/Grid';
 import { LoadingButton } from '@mui/lab';
 import React, { useEffect } from 'react';
 import useDecentralHireContract from '../hooks/useDecentralHireContract';
@@ -26,7 +32,8 @@ const NewCompanyForm = () => {
     React.useState('');
   const contract = useDecentralHireContract();
 
-  const onSubmit = async () => {
+  const handleSubmit = async (e) => {
+    e.preventDefault();
     try {
       setFormLoading(true);
       if (!companyName) {
@@ -54,6 +61,7 @@ const NewCompanyForm = () => {
       const companyProfileAddress = await contract.getCompanyProfileByOwner(
         address
       );
+      console.log(companyProfileAddress);
       setFormLoading(false);
       setSuccessSnackbarMessage('Job posting created successfully');
       setShowSuccessSnackbar(true);
@@ -105,38 +113,70 @@ const NewCompanyForm = () => {
 
   return (
     <div>
-      <h3>Company Name</h3>
-      <FormControl>
-        <TextField
-          disabled={isFormLoading}
-          required
-          type="text"
-          placeholder="Company Name"
-          onChange={(e) => setCompanyName(e.target.value)}
-        ></TextField>
-      </FormControl>
-      <h3>Company Website</h3>
-      <FormControl>
-        <TextField
-          disabled={isFormLoading}
-          type="url"
-          placeholder="http://"
-          onChange={(e) => setCompanyWebsite(e.target.value)}
-        ></TextField>
-      </FormControl>
-      <h3>Logo</h3>
-      <FormControl>
-        <MuiFileInput value={companyLogo} onChange={handleLogoChange} />
-      </FormControl>
-      <FormControl>
-        <LoadingButton
-          loading={isFormLoading}
-          disabled={isFormLoading}
-          onClick={onSubmit}
+      <Container component="main" maxWidth="xs">
+        <Box
+          sx={{
+            marginTop: 8,
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+          }}
         >
-          Submit
-        </LoadingButton>
-      </FormControl>
+          <Typography component="h1" variant="h5">
+            Create Company Profile
+          </Typography>
+          <Box component="form" onSubmit={handleSubmit} sx={{ mt: 3 }}>
+            <Grid container spacing={2}>
+              <Grid item xs={12}>
+                <TextField
+                  id="companyName"
+                  label="Company Name"
+                  autoFocus
+                  fullWidth
+                  disabled={isFormLoading}
+                  required
+                  type="text"
+                  placeholder="Company Name"
+                  onChange={(e) => setCompanyName(e.target.value)}
+                ></TextField>
+              </Grid>
+              <Grid item xs={12}>
+                <TextField
+                  id="companyWebsite"
+                  label="Company Website"
+                  disabled={isFormLoading}
+                  type="url"
+                  required
+                  fullWidth
+                  placeholder="Company website"
+                  onChange={(e) => setCompanyWebsite(e.target.value)}
+                />
+              </Grid>
+              <Grid item xs={12}>
+                <MuiFileInput
+                  id="companyLogo"
+                  placeholder="Company Logo"
+                  fullWidth
+                  label="Company Logo *"
+                  value={companyLogo}
+                  onChange={handleLogoChange}
+                />
+              </Grid>
+            </Grid>
+            <LoadingButton
+              type="submit"
+              color="primary"
+              fullWidth
+              variant="contained"
+              sx={{ mt: 3, mb: 3 }}
+              loading={isFormLoading}
+              disabled={isFormLoading}
+            >
+              Submit
+            </LoadingButton>
+          </Box>
+        </Box>
+      </Container>
       <Snackbar
         anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
         open={showSnackbar}

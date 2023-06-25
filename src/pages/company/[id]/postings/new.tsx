@@ -2,16 +2,13 @@ import { IWeb3Context, useWeb3Context } from '@/app/contexts/web3Context';
 import Grid from '@mui/material/Grid';
 import NotAuthorizedLayout from '@/app/components/NotAuthorizedLayout';
 import NewJobPostingForm from '@/app/components/NewJobPostingForm';
-import { useRouter } from 'next/router';
 
 export default function JobPostingNew() {
   const {
     state: { isAuthenticated },
   } = useWeb3Context() as IWeb3Context;
-  const router = useRouter();
 
   if (!isAuthenticated) {
-    router.push('/');
     return <NotAuthorizedLayout />;
   }
 
