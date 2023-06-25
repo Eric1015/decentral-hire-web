@@ -1,6 +1,6 @@
-# DecentralHire Web for Company
+# DecentralHire Web
 
-This is the UI for the DecentralHire dApps application [here](https://github.com/Eric1015/DecentralHire)
+This is the UI for the DecentralHire dApp application [here](https://github.com/Eric1015/DecentralHire)
 
 
 ### Getting Started
