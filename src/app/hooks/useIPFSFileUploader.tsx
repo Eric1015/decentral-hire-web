@@ -24,7 +24,15 @@ const useIPFSFileUploader = () => {
     return await client.add(file);
   };
 
-  return { uploadFile };
+  const getFile = async (cid: string) => {
+    return await client.get(cid);
+  };
+
+  const getFileUrl = (cid: string) => {
+    return `https://ipfs.io/ipfs/${cid}`;
+  };
+
+  return { uploadFile, getFile, getFileUrl };
 };
 
 export default useIPFSFileUploader;

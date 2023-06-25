@@ -66,7 +66,7 @@ const useWeb3Provider = () => {
   const disconnect = () => {
     setState(initialWeb3State);
     localStorage.removeItem('isAuthenticated');
-    localStorage.remoteItem('connectedMode');
+    localStorage.removeItem('connectedMode');
   };
 
   useEffect(() => {

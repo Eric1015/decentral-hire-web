@@ -4,8 +4,12 @@ import NotAuthorizedLayout from '@/app/components/NotAuthorizedLayout';
 import { useEffect, useState } from 'react';
 import useCompanyProfileContract from '@/app/hooks/useCompanyProfileContract';
 import { useRouter } from 'next/router';
-import { Button } from '@mui/material';
+import Button from '@mui/material/Button';
+import Typography from '@mui/material/Typography';
 import Link from 'next/link';
+import Image from 'next/image';
+import useIPFSFileUploader from '@/app/hooks/useIPFSFileUploader';
+import JobPostingListItem from '@/app/components/JobPostingListItem';
 
 export default function CompanyDetail() {
   const router = useRouter();
@@ -13,9 +17,11 @@ export default function CompanyDetail() {
     state: { isAuthenticated },
   } = useWeb3Context() as IWeb3Context;
   const { id = '' } = router.query;
+  const { getFileUrl } = useIPFSFileUploader();
 
   const contract = useCompanyProfileContract(Array.isArray(id) ? id[0] : id);
 
+  const [logoUrl, setLogoUrl] = useState<string>('');
   const [companyName, setCompanyName] = useState<string>('');
   const [companyWebsiteUrl, setCompanyWebsiteUrl] = useState<string>('');
   const [activeJobPostings, setActiveJobPostings] = useState<any[]>([]);
@@ -25,17 +31,18 @@ export default function CompanyDetail() {
       if (!contract) {
         return;
       }
+      const logoCid = await contract.getLogoCid();
       const name = await contract.getCompanyName();
       const websiteUrl = await contract.getWebsiteUrl();
       const fetchedActiveJobPostings = await contract.listActiveJobPostings();
-      console.log(fetchedActiveJobPostings);
+      setLogoUrl(getFileUrl(logoCid));
       setCompanyName(name);
       setCompanyWebsiteUrl(websiteUrl);
       setActiveJobPostings(fetchedActiveJobPostings);
     };
 
     getCompanyProfile();
-  }, [contract]);
+  }, [contract, getFileUrl]);
 
   if (!isAuthenticated) {
     return <NotAuthorizedLayout />;
@@ -44,20 +51,39 @@ export default function CompanyDetail() {
   return (
     <main className="flex min-h-screen flex-col items-center justify-between p-24">
       <Grid container display="flex" alignItems="center">
-        <Grid item display="flex" justifyContent="center" xs={12}>
-          <h1>{companyName}</h1>
+        <Grid container>
+          <Grid item xs={3}>
+            <Image width={200} height={200} src={logoUrl} alt="" />
+          </Grid>
+          <Grid item>
+            <Grid container>
+              <Grid item xs={12}>
+                <Typography component="h3" variant="h3">
+                  {companyName}
+                </Typography>
+              </Grid>
+              <Grid item xs={12}>
+                url:{' '}
+                <a href={companyWebsiteUrl} style={{ color: '#42a5f5' }}>
+                  {companyWebsiteUrl}
+                </a>
+              </Grid>
+            </Grid>
+          </Grid>
         </Grid>
-        <Grid item display="flex" justifyContent="center" xs={12}>
-          {companyWebsiteUrl}
-        </Grid>
-        <Grid item>
-          <h2>Job Postings</h2>
+
+        <Grid item sx={{ mt: 10 }}>
+          <Typography component="h4" variant="h4">
+            Job Postings
+          </Typography>
         </Grid>
         <Grid container>
           {activeJobPostings.map((jobPosting) => (
-            <Grid item xs={12} key={jobPosting.address}>
-              <Link href={`/company/${id}/postings/${jobPosting.address}`}>
-                {jobPosting}
+            <Grid item xs={12} key={jobPosting.jobPostingAddress}>
+              <Link
+                href={`/company/${id}/postings/${jobPosting.jobPostingAddress}`}
+              >
+                <JobPostingListItem jobPosting={jobPosting} />
               </Link>
             </Grid>
           ))}

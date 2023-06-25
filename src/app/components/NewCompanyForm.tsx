@@ -50,18 +50,20 @@ const NewCompanyForm = () => {
         return;
       }
 
-      const companyLogoUrl = companyLogo ? await uploadFile(companyLogo) : '';
+      const companyLogoResult = !!companyLogo
+        ? await uploadFile(companyLogo)
+        : '';
+      const companyLogoCid = companyLogoResult ? companyLogoResult.cid : '';
 
       const tx = await contract.createCompanyProfile(
         companyName,
         companyWebsite,
-        companyLogoUrl
+        companyLogoCid.toString()
       );
       await tx.wait();
       const companyProfileAddress = await contract.getCompanyProfileByOwner(
         address
       );
-      console.log(companyProfileAddress);
       setFormLoading(false);
       setSuccessSnackbarMessage('Job posting created successfully');
       setShowSuccessSnackbar(true);

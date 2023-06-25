@@ -95,11 +95,12 @@ const NewJobPostingForm = () => {
       const jobDescriptionBlob = new Blob([jobDescription], {
         type: 'text/plain',
       });
-      const jobDescriptionFileCid = await uploadFile(jobDescriptionBlob);
+      const jobDescriptionFileResult = await uploadFile(jobDescriptionBlob);
+      const jobDescriptionFileCid = jobDescriptionFileResult.cid;
 
       const tx = await contract.createJobPosting(
         title,
-        jobDescriptionFileCid,
+        jobDescriptionFileCid.toString(),
         country,
         city,
         isRemote,

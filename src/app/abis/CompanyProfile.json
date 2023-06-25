@@ -153,9 +153,61 @@
     "name": "listActiveJobPostings",
     "outputs": [
       {
-        "internalType": "contract JobPosting[]",
+        "components": [
+          {
+            "internalType": "address",
+            "name": "companyProfileAddress",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "jobPostingAddress",
+            "type": "address"
+          },
+          {
+            "internalType": "string",
+            "name": "title",
+            "type": "string"
+          },
+          {
+            "internalType": "string",
+            "name": "jobDescriptionIpfsHash",
+            "type": "string"
+          },
+          {
+            "internalType": "string",
+            "name": "country",
+            "type": "string"
+          },
+          {
+            "internalType": "string",
+            "name": "city",
+            "type": "string"
+          },
+          {
+            "internalType": "bool",
+            "name": "isRemote",
+            "type": "bool"
+          },
+          {
+            "internalType": "uint256",
+            "name": "totalHiringCount",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "currentHiredCount",
+            "type": "uint256"
+          },
+          {
+            "internalType": "bool",
+            "name": "isActive",
+            "type": "bool"
+          }
+        ],
+        "internalType": "struct JobPostingMetadata[]",
         "name": "",
-        "type": "address[]"
+        "type": "tuple[]"
       }
     ],
     "stateMutability": "view",
