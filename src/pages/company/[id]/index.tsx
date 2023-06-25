@@ -38,6 +38,7 @@ export default function CompanyDetail() {
   }, [contract]);
 
   if (!isAuthenticated) {
+    router.push('/');
     return <NotAuthorizedLayout />;
   }
 

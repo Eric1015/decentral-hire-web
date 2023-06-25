@@ -1,36 +1,41 @@
 import { IWeb3Context, useWeb3Context } from '@/app/contexts/web3Context';
 import Grid from '@mui/material/Grid';
 import Button from '@mui/material/Button';
+import Box from '@mui/material/Box';
 import useDecentralHireContract from '@/app/hooks/useDecentralHireContract';
 import { useRouter } from 'next/router';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import { ConnectedMode } from '@/app/hooks/useWeb3Provider';
 
 export default function Home() {
   const router = useRouter();
   const {
     connectWallet,
     disconnect,
-    state: { isAuthenticated, address, currentChain },
+    state: { isAuthenticated, address },
   } = useWeb3Context() as IWeb3Context;
+  const [isLoading, setLoading] = useState(false);
 
   const decentralHireContract = useDecentralHireContract();
 
-  const onConnectWalletClicked = async () => {
-    await connectWallet();
+  const onConnectWalletAsCompanyClicked = async () => {
+    setLoading(true);
+    await connectWallet(ConnectedMode.COMPANY);
     if (isAuthenticated) {
       if (!decentralHireContract) {
         await disconnect();
+        setLoading(false);
         return;
       }
       const companyProfileAlreadyExists =
         await decentralHireContract.isCompanyProfileByOwnerAddressExists(
           address
         );
-      console.log(companyProfileAlreadyExists);
       if (!companyProfileAlreadyExists) {
         router.push('/company/new');
       }
     }
+    setLoading(false);
   };
 
   useEffect(() => {
@@ -44,7 +49,6 @@ export default function Home() {
           await decentralHireContract.isCompanyProfileByOwnerAddressExists(
             address
           );
-        console.log(companyProfileAlreadyExists);
         if (!companyProfileAlreadyExists) {
           router.push('/company/new');
         } else {
@@ -60,18 +64,21 @@ export default function Home() {
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-between p-24">
-      <Grid container display="flex" alignItems="center">
-        <Grid item display="flex" justifyContent="center" xs={12}>
-          <h1>Welcome to DecentralHire for Company</h1>
+      <Box sx={{ flexGrow: 1 }}>
+        <Grid container alignItems="center" justifyContent="center">
+          <Grid item justifyContent="center" alignItems="center" xs={12}>
+            <Button
+              color="primary"
+              variant="contained"
+              disableElevation
+              onClick={onConnectWalletAsCompanyClicked}
+              disabled={isLoading}
+            >
+              Connect as Company
+            </Button>
+          </Grid>
         </Grid>
-        <Grid item display="flex" justifyContent="center" xs={12}>
-          {isAuthenticated ? (
-            <Button onClick={disconnect}>Disconnect Wallet</Button>
-          ) : (
-            <Button onClick={onConnectWalletClicked}>Connect Wallet</Button>
-          )}
-        </Grid>
-      </Grid>
+      </Box>
     </main>
   );
 }

@@ -1,12 +1,18 @@
 import { BrowserProvider, ethers, JsonRpcSigner } from 'ethers';
 import { useCallback, useEffect, useState } from 'react';
 
+export enum ConnectedMode {
+  APPLICANT = 'APPLICANT',
+  COMPANY = 'COMPANY',
+}
+
 export interface IWeb3State {
   address: string | null;
   currentChain: number | null;
   signer: JsonRpcSigner | null;
   provider: BrowserProvider | null;
   isAuthenticated: boolean;
+  connectedMode: ConnectedMode | null;
 }
 
 const useWeb3Provider = () => {
@@ -16,48 +22,61 @@ const useWeb3Provider = () => {
     signer: null,
     provider: null,
     isAuthenticated: false,
+    connectedMode: null,
   };
 
   const [state, setState] = useState<IWeb3State>(initialWeb3State);
 
-  const connectWallet = useCallback(async () => {
-    if (state.isAuthenticated) return;
+  const connectWallet = useCallback(
+    async (inputConnectedMode: ConnectedMode) => {
+      if (state.isAuthenticated) return;
 
-    try {
-      const { ethereum } = window;
+      try {
+        const { ethereum } = window;
 
-      const provider = new ethers.BrowserProvider(ethereum);
+        const provider = new ethers.BrowserProvider(ethereum);
 
-      const accounts: string[] = await provider.send('eth_requestAccounts', []);
+        const accounts: string[] = await provider.send(
+          'eth_requestAccounts',
+          []
+        );
 
-      if (accounts.length > 0) {
-        const signer = await provider.getSigner();
-        const chain = Number(await (await provider.getNetwork()).chainId);
+        if (accounts.length > 0) {
+          const signer = await provider.getSigner();
+          const chain = Number(await (await provider.getNetwork()).chainId);
 
-        setState({
-          ...state,
-          address: accounts[0],
-          signer,
-          currentChain: chain,
-          provider,
-          isAuthenticated: true,
-        });
+          setState({
+            ...state,
+            address: accounts[0],
+            signer,
+            currentChain: chain,
+            provider,
+            isAuthenticated: true,
+            connectedMode: inputConnectedMode,
+          });
 
-        localStorage.setItem('isAuthenticated', 'true');
-      }
-    } catch {}
-  }, [state]);
+          localStorage.setItem('isAuthenticated', 'true');
+          localStorage.setItem('connectedMode', inputConnectedMode);
+        }
+      } catch {}
+    },
+    [state]
+  );
 
   const disconnect = () => {
     setState(initialWeb3State);
     localStorage.removeItem('isAuthenticated');
+    localStorage.remoteItem('connectedMode');
   };
 
   useEffect(() => {
     if (window == null) return;
 
-    if (localStorage.hasOwnProperty('isAuthenticated')) {
-      connectWallet();
+    if (
+      localStorage.hasOwnProperty('isAuthenticated') &&
+      localStorage.hasOwnProperty('connectedMode')
+    ) {
+      connectWallet(localStorage.getItem('connectedMode') as ConnectedMode);
     }
   }, [connectWallet, state.isAuthenticated]);
 

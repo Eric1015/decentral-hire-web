@@ -2,15 +2,16 @@ import { IWeb3Context, useWeb3Context } from '@/app/contexts/web3Context';
 import Grid from '@mui/material/Grid';
 import NotAuthorizedLayout from '@/app/components/NotAuthorizedLayout';
 import NewCompanyForm from '@/app/components/NewCompanyForm';
+import { useRouter } from 'next/router';
 
 export default function CompanyNew() {
   const {
-    connectWallet,
-    disconnect,
-    state: { isAuthenticated, address, currentChain },
+    state: { isAuthenticated },
   } = useWeb3Context() as IWeb3Context;
+  const router = useRouter();
 
   if (!isAuthenticated) {
+    router.push('/');
     return <NotAuthorizedLayout />;
   }
 
