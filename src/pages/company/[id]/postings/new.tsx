@@ -16,9 +16,6 @@ export default function JobPostingNew() {
     <main className="flex min-h-screen flex-col items-center justify-between p-24">
       <Grid container display="flex" alignItems="center">
         <Grid item display="flex" justifyContent="center" xs={12}>
-          <h1>Create new Job Posting</h1>
-        </Grid>
-        <Grid item display="flex" justifyContent="center" xs={12}>
           <NewJobPostingForm />
         </Grid>
       </Grid>

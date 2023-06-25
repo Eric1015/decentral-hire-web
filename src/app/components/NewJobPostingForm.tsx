@@ -1,39 +1,62 @@
-import {
-  Alert,
-  FormControl,
-  Snackbar,
-  TextField,
-  FormControlLabel,
-  Switch,
-  Autocomplete,
-} from '@mui/material';
+import Typography from '@mui/material/Typography';
+import Alert from '@mui/material/Alert';
+import Snackbar from '@mui/material/Snackbar';
+import TextField from '@mui/material/TextField';
+import FormControlLabel from '@mui/material/FormControlLabel';
+import Switch from '@mui/material/Switch';
+import Autocomplete from '@mui/material/Autocomplete';
+import Container from '@mui/material/Container';
+import Box from '@mui/material/Box';
+import Grid from '@mui/material/Grid';
 import { LoadingButton } from '@mui/lab';
-import React, { useEffect } from 'react';
+import React, { FormEvent, useEffect } from 'react';
 import { useRouter } from 'next/router';
-import { IWeb3Context, useWeb3Context } from '../contexts/web3Context';
 import useCompanyProfileContract from '../hooks/useCompanyProfileContract';
 import { City, Country, ICity, ICountry } from 'country-state-city';
 import '@uiw/react-md-editor/markdown-editor.css';
 import '@uiw/react-markdown-preview/markdown.css';
-import dynamic from 'next/dynamic';
 import useIPFSFileUploader from '../hooks/useIPFSFileUploader';
 import { ethers } from 'ethers';
+import { ValidationError } from '../types/validationError';
+import dynamic from 'next/dynamic';
+
+const jobDescriptionPlaceholderTemplate = `
+# Job Description
+
+# Responsibilities
+
+# Requirements
+
+# Nice to have
+
+# Benefits
+
+# About the company
+`;
 
 type CountryOptionType = ICountry & { label: string; value: string };
 type CityOptionType = ICity & { label: string; value: string };
 
+// loading the following with React Lazy to avoid the SSR import error. Followed the following guide
+// https://github.com/uiwjs/react-md-editor/issues/52#issuecomment-1272350203
 const MDEditor = dynamic(() => import('@uiw/react-md-editor'), { ssr: false });
+const EditorMarkdown = dynamic(
+  () =>
+    import('@uiw/react-md-editor').then((mod) => {
+      return mod.default.Markdown;
+    }),
+  { ssr: false }
+);
 
 const NewJobPostingForm = () => {
   const router = useRouter();
   const { uploadFile } = useIPFSFileUploader();
-  const {
-    state: { address },
-  } = useWeb3Context() as IWeb3Context;
   const { id = '' } = router.query;
   const [isFormLoading, setFormLoading] = React.useState(false);
   const [title, setTitle] = React.useState('');
-  const [jobDescription, setJobDescription] = React.useState<string>('');
+  const [jobDescription, setJobDescription] = React.useState<string>(
+    jobDescriptionPlaceholderTemplate
+  );
   const [country, setCountry] = React.useState('');
   const [city, setCity] = React.useState('');
   const [isRemote, setIsRemote] = React.useState(false);
@@ -49,31 +72,24 @@ const NewJobPostingForm = () => {
   const [availableCities, setAvailableCities] =
     React.useState<CityOptionType[]>();
 
-  const onSubmit = async () => {
+  const handleSubmit = async (e: FormEvent) => {
+    e.preventDefault();
     try {
       setFormLoading(true);
       if (!title) {
-        setSnackbarMessage('Title is required');
-        setShowSnackbar(true);
-        return;
+        throw new ValidationError('Title is required');
       }
       if (!jobDescription) {
-        setSnackbarMessage('Job Description is required');
-        setShowSnackbar(true);
-        return;
+        throw new ValidationError('Job Description is required');
       }
       if (!isRemote && !country) {
-        setSnackbarMessage('Country is required for non-remote jobs');
-        setShowSnackbar(true);
-        return;
+        throw new ValidationError('Country is required for non-remote jobs');
       }
       if (totalHiringCount < 1) {
-        setSnackbarMessage('Total Hiring Count must be greater than 0');
-        setShowSnackbar(true);
-        return;
+        throw new ValidationError('Total Hiring Count must be greater than 0');
       }
       if (!contract) {
-        return;
+        throw new Error("Couldn't load contract");
       }
 
       const jobDescriptionBlob = new Blob([jobDescription], {
@@ -98,9 +114,13 @@ const NewJobPostingForm = () => {
       router.push(`/company/${id}`);
     } catch (error) {
       console.error(error);
-      setSnackbarMessage(
-        `Failed to create job posting: ${(error as Error).message}`
-      );
+      if (error instanceof ValidationError) {
+        setSnackbarMessage(error.message);
+      } else {
+        setSnackbarMessage(
+          `Failed to create job posting: ${(error as Error).message}`
+        );
+      }
       setShowSnackbar(true);
       setFormLoading(false);
     }
@@ -145,67 +165,117 @@ const NewJobPostingForm = () => {
 
   return (
     <div>
-      <h3>Job Title</h3>
-      <FormControl>
-        <TextField
-          disabled={isFormLoading}
-          required
-          type="text"
-          placeholder="Title"
-          onChange={(e) => setTitle(e.target.value)}
-        ></TextField>
-      </FormControl>
-      <h3>Job Description</h3>
-      <MDEditor value={jobDescription} onChange={handleJobDescriptionChange} />
-      <h3>Job Location</h3>
-      <FormControl fullWidth>
-        <Autocomplete
-          disablePortal
-          disabled={isFormLoading}
-          options={availableCountries || []}
-          onChange={(e, value) => setCountry(value?.value || '')}
-          renderInput={(params) => <TextField {...params} label="Country" />}
-        />
-        <br />
-        <Autocomplete
-          disablePortal
-          disabled={isFormLoading || !country}
-          options={availableCities || []}
-          onChange={(e, value) => setCity(value?.value || '')}
-          renderInput={(params) => <TextField {...params} label="City" />}
-        />
-      </FormControl>
-      <FormControl fullWidth>
-        <FormControlLabel
-          control={
-            <Switch
-              checked={isRemote}
-              onChange={(e) => setIsRemote(e.target.checked)}
-            />
-          }
-          label="Is Remote"
-        />
-      </FormControl>
-      <h3>Total Hiring Count</h3>
-      <FormControl>
-        <TextField
-          disabled={isFormLoading}
-          type="number"
-          value={totalHiringCount}
-          placeholder="Total Hiring Count"
-          onChange={(e) => setTotalHiringCount(parseInt(e.target.value))}
-          inputProps={{ min: 1, inputMode: 'numeric' }}
-        ></TextField>
-      </FormControl>
-      <FormControl>
-        <LoadingButton
-          loading={isFormLoading}
-          disabled={isFormLoading}
-          onClick={onSubmit}
+      <Container component="main" maxWidth="lg">
+        <Box
+          sx={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+          }}
         >
-          Submit
-        </LoadingButton>
-      </FormControl>
+          <Typography component="h1" variant="h5">
+            Create Job Posting
+          </Typography>
+          <Box component="form" onSubmit={handleSubmit} sx={{ mt: 3 }}>
+            <Grid container spacing={2}>
+              <Grid item xs={6}>
+                <Grid container spacing={2}>
+                  <Grid item xs={12}>
+                    <TextField
+                      id="jobTitle"
+                      label="Job Title"
+                      autoFocus
+                      fullWidth
+                      disabled={isFormLoading}
+                      required
+                      type="text"
+                      placeholder="Job Title"
+                      onChange={(e) => setTitle(e.target.value)}
+                    ></TextField>
+                  </Grid>
+                  <Grid item xs={12}>
+                    <Typography component="p">Job Description</Typography>
+                    <MDEditor
+                      aria-disabled={isFormLoading}
+                      value={jobDescription}
+                      preview="edit"
+                      onChange={handleJobDescriptionChange}
+                    />
+                  </Grid>
+                  <Grid item xs={12}>
+                    <Typography component="p">Location</Typography>
+                    <Autocomplete
+                      disablePortal
+                      disabled={isFormLoading}
+                      options={availableCountries || []}
+                      onChange={(e, value) => setCountry(value?.value || '')}
+                      renderInput={(params) => (
+                        <TextField {...params} label="Country" />
+                      )}
+                    />
+                    <br />
+                    <Autocomplete
+                      disablePortal
+                      disabled={isFormLoading || !country}
+                      options={availableCities || []}
+                      onChange={(e, value) => setCity(value?.value || '')}
+                      renderInput={(params) => (
+                        <TextField {...params} label="City" />
+                      )}
+                    />
+                  </Grid>
+                  <Grid item xs={12}>
+                    <FormControlLabel
+                      control={
+                        <Switch
+                          checked={isRemote}
+                          onChange={(e) => setIsRemote(e.target.checked)}
+                        />
+                      }
+                      label="Is Remote"
+                    />
+                  </Grid>
+                  <Grid item xs={12}>
+                    <TextField
+                      fullWidth
+                      id="totalHiringCount"
+                      label="Total Hiring Count"
+                      required
+                      disabled={isFormLoading}
+                      type="number"
+                      value={totalHiringCount}
+                      placeholder="Total Hiring Count"
+                      onChange={(e) =>
+                        setTotalHiringCount(parseInt(e.target.value))
+                      }
+                      inputProps={{ min: 1, inputMode: 'numeric' }}
+                    />
+                  </Grid>
+                  <Grid item xs={12}>
+                    <LoadingButton
+                      type="submit"
+                      color="primary"
+                      fullWidth
+                      variant="contained"
+                      sx={{ mt: 3, mb: 3 }}
+                      loading={isFormLoading}
+                      disabled={isFormLoading}
+                    >
+                      Submit
+                    </LoadingButton>
+                  </Grid>
+                </Grid>
+              </Grid>
+              <Grid item xs={6}>
+                <EditorMarkdown
+                  source={jobDescription}
+                  style={{ whiteSpace: 'pre-wrap', padding: '16px' }}
+                />
+              </Grid>
+            </Grid>
+          </Box>
+        </Box>
+      </Container>
       <Snackbar
         anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
         open={showSnackbar}
