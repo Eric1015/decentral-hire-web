@@ -6,7 +6,7 @@ import Snackbar from '@mui/material/Snackbar';
 import Alert from '@mui/material/Alert';
 import Grid from '@mui/material/Grid';
 import { LoadingButton } from '@mui/lab';
-import React, { useEffect } from 'react';
+import React, { FormEvent, useEffect } from 'react';
 import useDecentralHireContract from '../hooks/useDecentralHireContract';
 import { useRouter } from 'next/router';
 import { IWeb3Context, useWeb3Context } from '../contexts/web3Context';
@@ -32,7 +32,7 @@ const NewCompanyForm = () => {
     React.useState('');
   const contract = useDecentralHireContract();
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     try {
       setFormLoading(true);
