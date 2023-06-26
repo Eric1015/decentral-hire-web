@@ -10,6 +10,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import useIPFSFileUploader from '@/app/hooks/useIPFSFileUploader';
 import JobPostingListItem from '@/app/components/JobPostingListItem';
+import ModeEditIcon from '@mui/icons-material/ModeEdit';
 
 export default function CompanyDetail() {
   const router = useRouter();
@@ -60,6 +61,9 @@ export default function CompanyDetail() {
               <Grid item xs={12}>
                 <Typography component="h3" variant="h3">
                   {companyName}
+                  <Link href={`/company/${id}/edit`} style={{ marginLeft: 30 }}>
+                    <ModeEditIcon color="primary" />
+                  </Link>
                 </Typography>
               </Grid>
               <Grid item xs={12}>

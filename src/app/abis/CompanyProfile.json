@@ -292,6 +292,29 @@
     "type": "function"
   },
   {
+    "inputs": [
+      {
+        "internalType": "string",
+        "name": "_name",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "_websiteUrl",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "_logoCid",
+        "type": "string"
+      }
+    ],
+    "name": "updateCompanyProfile",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
     "inputs": [],
     "name": "websiteUrl",
     "outputs": [

@@ -5,18 +5,25 @@ import TextField from '@mui/material/TextField';
 import Snackbar from '@mui/material/Snackbar';
 import Alert from '@mui/material/Alert';
 import Grid from '@mui/material/Grid';
+import Button from '@mui/material/Button';
 import { LoadingButton } from '@mui/lab';
 import React, { FormEvent, useEffect } from 'react';
-import useDecentralHireContract from '../hooks/useDecentralHireContract';
 import { useRouter } from 'next/router';
 import { IWeb3Context, useWeb3Context } from '../contexts/web3Context';
 import { MuiFileInput } from 'mui-file-input';
 import useIPFSFileUploader from '../hooks/useIPFSFileUploader';
+import useCompanyProfileContract from '../hooks/useCompanyProfileContract';
+import Image from 'next/image';
+
+type Props = {
+  isEdit?: boolean;
+};
 
 // use material UI library importing from "@mui/material", create a centered form that allows the user to input company name and website url.
 // use the "useState" hook to create a state variable for the company name and website url.
-const NewCompanyForm = () => {
+const CompanyForm = ({ isEdit = false }: Props) => {
   const router = useRouter();
+  const { id = '' } = router.query;
   const {
     state: { address },
   } = useWeb3Context() as IWeb3Context;
@@ -25,12 +32,15 @@ const NewCompanyForm = () => {
   const [companyName, setCompanyName] = React.useState('');
   const [companyWebsite, setCompanyWebsite] = React.useState('');
   const [companyLogo, setCompanyLogo] = React.useState<File | null>(null);
+  const [companyLogoCid, setCompanyLogoCid] = React.useState<string>('');
   const [showSnackbar, setShowSnackbar] = React.useState(false);
   const [snackbarMessage, setSnackbarMessage] = React.useState('');
   const [showSuccessSnackbar, setShowSuccessSnackbar] = React.useState(false);
   const [successSnackbarMessage, setSuccessSnackbarMessage] =
     React.useState('');
-  const contract = useDecentralHireContract();
+  const contract = useCompanyProfileContract(Array.isArray(id) ? id[0] : id);
+  const { getFile, getFileUrl } = useIPFSFileUploader();
+  const [logoPreview, setLogoPreview] = React.useState<string>('');
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -50,22 +60,43 @@ const NewCompanyForm = () => {
         return;
       }
 
-      const companyLogoResult = !!companyLogo
-        ? await uploadFile(companyLogo)
-        : '';
-      const companyLogoCid = companyLogoResult ? companyLogoResult.cid : '';
+      let newCompanyLogoCid = '';
 
-      const tx = await contract.createCompanyProfile(
-        companyName,
-        companyWebsite,
-        companyLogoCid.toString()
-      );
+      if (!companyLogoCid) {
+        const companyLogoResult = !!companyLogo
+          ? await uploadFile(companyLogo)
+          : '';
+        newCompanyLogoCid = companyLogoResult
+          ? companyLogoResult.cid.toString()
+          : '';
+      } else {
+        newCompanyLogoCid = companyLogoCid;
+      }
+
+      const tx = isEdit
+        ? await contract.updateCompanyProfile(
+            companyName,
+            companyWebsite,
+            newCompanyLogoCid
+          )
+        : await contract.createCompanyProfile(
+            companyName,
+            companyWebsite,
+            newCompanyLogoCid
+          );
       await tx.wait();
+      if (isEdit && id) {
+        setFormLoading(false);
+        setSuccessSnackbarMessage('Company profile updated successfully');
+        setShowSuccessSnackbar(true);
+        router.push(`/company/${id}`);
+        return;
+      }
       const companyProfileAddress = await contract.getCompanyProfileByOwner(
         address
       );
       setFormLoading(false);
-      setSuccessSnackbarMessage('Job posting created successfully');
+      setSuccessSnackbarMessage('Company profile created successfully');
       setShowSuccessSnackbar(true);
       router.push(`/company/${companyProfileAddress}`);
     } catch (error) {
@@ -85,7 +116,10 @@ const NewCompanyForm = () => {
       setShowSnackbar(true);
       return;
     }
+    // reset it to empty string so that the previous logo cid is not used
+    setCompanyLogoCid('');
     setCompanyLogo(file);
+    setLogoPreview(URL.createObjectURL(file));
   };
 
   const handleClose = () => {
@@ -98,20 +132,50 @@ const NewCompanyForm = () => {
 
   useEffect(() => {
     const setUp = async () => {
-      if (contract) {
-        const companyProfileAlreadyExists =
-          await contract.isCompanyProfileByOwnerAddressExists(address);
-        if (companyProfileAlreadyExists) {
-          const companyProfileAddress = await contract.getCompanyProfileByOwner(
-            address
-          );
-          router.push(`/company/${companyProfileAddress}`);
+      if (isEdit) {
+        if (!contract) {
+          return;
         }
+        const logoCid = await contract.getLogoCid();
+        const name = await contract.getCompanyName();
+        const websiteUrl = await contract.getWebsiteUrl();
+        const asyncItr = await getFile(logoCid);
+        if (!asyncItr) return;
+        for await (const content of asyncItr) {
+          const logoBlob = new Blob([content]);
+          setCompanyLogo(
+            Object.assign(logoBlob, {
+              lastModified: new Date().getTime(),
+              name: 'logo.png',
+              webkitRelativePath: '',
+            }) as File
+          );
+        }
+        setCompanyName(name);
+        setCompanyWebsite(websiteUrl);
+        setLogoPreview(getFileUrl(logoCid));
+        setCompanyLogoCid(logoCid);
       }
     };
 
     setUp();
-  }, [contract, router, address]);
+  }, [contract, isEdit, getFile, getFileUrl]);
+
+  useEffect(() => {
+    console.log('Contract changed');
+  }, [contract]);
+
+  useEffect(() => {
+    console.log('isEdit changed');
+  }, [isEdit]);
+
+  useEffect(() => {
+    console.log('getFile changed');
+  }, [getFile]);
+
+  useEffect(() => {
+    console.log('getFileUrl changed');
+  }, [getFileUrl]);
 
   return (
     <div>
@@ -124,7 +188,7 @@ const NewCompanyForm = () => {
           }}
         >
           <Typography component="h1" variant="h5">
-            Create Company Profile
+            {isEdit ? 'Edit Company Profile' : 'Create Company Profile'}
           </Typography>
           <Box component="form" onSubmit={handleSubmit} sx={{ mt: 3 }}>
             <Grid container spacing={2}>
@@ -138,6 +202,7 @@ const NewCompanyForm = () => {
                   required
                   type="text"
                   placeholder="Company Name"
+                  value={companyName}
                   onChange={(e) => setCompanyName(e.target.value)}
                 ></TextField>
               </Grid>
@@ -150,6 +215,7 @@ const NewCompanyForm = () => {
                   required
                   fullWidth
                   placeholder="Company website"
+                  value={companyWebsite}
                   onChange={(e) => setCompanyWebsite(e.target.value)}
                 />
               </Grid>
@@ -163,18 +229,39 @@ const NewCompanyForm = () => {
                   onChange={handleLogoChange}
                 />
               </Grid>
+              <Grid item xs={12}>
+                <Image src={logoPreview} alt="" width={100} height={100} />
+              </Grid>
+              <Grid item xs={12}>
+                <Grid container>
+                  <Grid item xs={6}>
+                    <Button
+                      color="secondary"
+                      fullWidth
+                      variant="contained"
+                      sx={{ mt: 3, mr: 3, mb: 3 }}
+                      disabled={isFormLoading}
+                      onClick={() => router.push(`/company/${id}`)}
+                    >
+                      Cancel
+                    </Button>
+                  </Grid>
+                  <Grid item xs={6}>
+                    <LoadingButton
+                      type="submit"
+                      color="primary"
+                      fullWidth
+                      variant="contained"
+                      sx={{ mt: 3, ml: 3, mb: 3 }}
+                      loading={isFormLoading}
+                      disabled={isFormLoading}
+                    >
+                      Submit
+                    </LoadingButton>
+                  </Grid>
+                </Grid>
+              </Grid>
             </Grid>
-            <LoadingButton
-              type="submit"
-              color="primary"
-              fullWidth
-              variant="contained"
-              sx={{ mt: 3, mb: 3 }}
-              loading={isFormLoading}
-              disabled={isFormLoading}
-            >
-              Submit
-            </LoadingButton>
           </Box>
         </Box>
       </Container>
@@ -204,4 +291,4 @@ const NewCompanyForm = () => {
   );
 };
 
-export default NewCompanyForm;
+export default CompanyForm;

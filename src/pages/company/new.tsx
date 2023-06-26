@@ -1,12 +1,34 @@
 import { IWeb3Context, useWeb3Context } from '@/app/contexts/web3Context';
 import Grid from '@mui/material/Grid';
 import NotAuthorizedLayout from '@/app/components/NotAuthorizedLayout';
-import NewCompanyForm from '@/app/components/NewCompanyForm';
+import CompanyForm from '@/app/components/CompanyForm';
+import { useEffect } from 'react';
+import useDecentralHireContract from '@/app/hooks/useDecentralHireContract';
+import { useRouter } from 'next/router';
 
 export default function CompanyNew() {
+  const router = useRouter();
   const {
-    state: { isAuthenticated },
+    state: { isAuthenticated, address },
   } = useWeb3Context() as IWeb3Context;
+  const contract = useDecentralHireContract();
+
+  useEffect(() => {
+    const setUp = async () => {
+      if (contract) {
+        const companyProfileAlreadyExists =
+          await contract.isCompanyProfileByOwnerAddressExists(address);
+        if (companyProfileAlreadyExists) {
+          const companyProfileAddress = await contract.getCompanyProfileByOwner(
+            address
+          );
+          router.push(`/company/${companyProfileAddress}`);
+        }
+      }
+    };
+
+    setUp();
+  }, [contract, router, address]);
 
   if (!isAuthenticated) {
     return <NotAuthorizedLayout />;
@@ -16,7 +38,7 @@ export default function CompanyNew() {
     <main className="flex min-h-screen flex-col items-center justify-between p-24">
       <Grid container display="flex" alignItems="center">
         <Grid item display="flex" justifyContent="center" xs={12}>
-          <NewCompanyForm />
+          <CompanyForm />
         </Grid>
       </Grid>
     </main>
