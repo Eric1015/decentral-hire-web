@@ -1,6 +1,7 @@
 export type JobPosting = {
   companyProfileAddress: string;
   jobPostingAddress: string;
+  owner: string;
   title: string;
   jobDescriptionIpfsHash: string;
   country: string;

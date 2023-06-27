@@ -17,10 +17,14 @@ export default function CompanyDetail() {
   const {
     state: { isAuthenticated },
   } = useWeb3Context() as IWeb3Context;
-  const { id = '' } = router.query;
+  const { companyProfileAddress = '' } = router.query;
   const { getFileUrl } = useIPFSFileUploader();
 
-  const contract = useCompanyProfileContract(Array.isArray(id) ? id[0] : id);
+  const contract = useCompanyProfileContract(
+    Array.isArray(companyProfileAddress)
+      ? companyProfileAddress[0]
+      : companyProfileAddress
+  );
 
   const [logoUrl, setLogoUrl] = useState<string>('');
   const [companyName, setCompanyName] = useState<string>('');
@@ -61,7 +65,10 @@ export default function CompanyDetail() {
               <Grid item xs={12}>
                 <Typography component="h3" variant="h3">
                   {companyName}
-                  <Link href={`/company/${id}/edit`} style={{ marginLeft: 30 }}>
+                  <Link
+                    href={`/company/${companyProfileAddress}/edit`}
+                    style={{ marginLeft: 30 }}
+                  >
                     <ModeEditIcon color="primary" />
                   </Link>
                 </Typography>
@@ -85,7 +92,7 @@ export default function CompanyDetail() {
           {activeJobPostings.map((jobPosting) => (
             <Grid item xs={12} key={jobPosting.jobPostingAddress}>
               <Link
-                href={`/company/${id}/postings/${jobPosting.jobPostingAddress}`}
+                href={`/company/${companyProfileAddress}/postings/${jobPosting.jobPostingAddress}`}
               >
                 <JobPostingListItem jobPosting={jobPosting} />
               </Link>
@@ -93,7 +100,7 @@ export default function CompanyDetail() {
           ))}
         </Grid>
         <Grid item>
-          <Link href={`/company/${id}/postings/new`}>
+          <Link href={`/company/${companyProfileAddress}/postings/new`}>
             <Button variant="contained" color="primary">
               Post Job
             </Button>

@@ -253,6 +253,16 @@
             "type": "address"
           },
           {
+            "internalType": "address",
+            "name": "jobPostingAddress",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "owner",
+            "type": "address"
+          },
+          {
             "internalType": "string",
             "name": "title",
             "type": "string"
@@ -293,7 +303,7 @@
             "type": "bool"
           }
         ],
-        "internalType": "struct JobPosting.JobPostingMetadata",
+        "internalType": "struct JobPostingMetadata",
         "name": "",
         "type": "tuple"
       }

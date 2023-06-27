@@ -61,6 +61,24 @@
   {
     "inputs": [
       {
+        "internalType": "address",
+        "name": "_jobPostingAddress",
+        "type": "address"
+      },
+      {
+        "internalType": "string",
+        "name": "_jobClosingReason",
+        "type": "string"
+      }
+    ],
+    "name": "closeJobPosting",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "string",
         "name": "_title",
         "type": "string"
@@ -162,6 +180,11 @@
           {
             "internalType": "address",
             "name": "jobPostingAddress",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "owner",
             "type": "address"
           },
           {

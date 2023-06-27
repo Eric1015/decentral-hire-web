@@ -14,6 +14,7 @@ import { MuiFileInput } from 'mui-file-input';
 import useIPFSFileUploader from '../hooks/useIPFSFileUploader';
 import useCompanyProfileContract from '../hooks/useCompanyProfileContract';
 import Image from 'next/image';
+import useDecentralHireContract from '../hooks/useDecentralHireContract';
 
 type Props = {
   isEdit?: boolean;
@@ -23,7 +24,7 @@ type Props = {
 // use the "useState" hook to create a state variable for the company name and website url.
 const CompanyForm = ({ isEdit = false }: Props) => {
   const router = useRouter();
-  const { id = '' } = router.query;
+  const { companyProfileAddress = '' } = router.query;
   const {
     state: { address },
   } = useWeb3Context() as IWeb3Context;
@@ -38,7 +39,12 @@ const CompanyForm = ({ isEdit = false }: Props) => {
   const [showSuccessSnackbar, setShowSuccessSnackbar] = React.useState(false);
   const [successSnackbarMessage, setSuccessSnackbarMessage] =
     React.useState('');
-  const contract = useCompanyProfileContract(Array.isArray(id) ? id[0] : id);
+  const decentralHireContract = useDecentralHireContract();
+  const companyProfileContract = useCompanyProfileContract(
+    Array.isArray(companyProfileAddress)
+      ? companyProfileAddress[0]
+      : companyProfileAddress
+  );
   const { getFile, getFileUrl } = useIPFSFileUploader();
   const [logoPreview, setLogoPreview] = React.useState<string>('');
 
@@ -56,7 +62,10 @@ const CompanyForm = ({ isEdit = false }: Props) => {
         setShowSnackbar(true);
         return;
       }
-      if (!contract) {
+      if (isEdit && !companyProfileContract) {
+        return;
+      }
+      if (!isEdit && !decentralHireContract) {
         return;
       }
 
@@ -74,31 +83,30 @@ const CompanyForm = ({ isEdit = false }: Props) => {
       }
 
       const tx = isEdit
-        ? await contract.updateCompanyProfile(
+        ? await companyProfileContract.updateCompanyProfile(
             companyName,
             companyWebsite,
             newCompanyLogoCid
           )
-        : await contract.createCompanyProfile(
+        : await decentralHireContract.createCompanyProfile(
             companyName,
             companyWebsite,
             newCompanyLogoCid
           );
       await tx.wait();
-      if (isEdit && id) {
+      if (isEdit && companyProfileAddress) {
         setFormLoading(false);
         setSuccessSnackbarMessage('Company profile updated successfully');
         setShowSuccessSnackbar(true);
-        router.push(`/company/${id}`);
+        router.push(`/company/${companyProfileAddress}`);
         return;
       }
-      const companyProfileAddress = await contract.getCompanyProfileByOwner(
-        address
-      );
+      const newCompanyProfileAddress =
+        await decentralHireContract.getCompanyProfileByOwner(address);
       setFormLoading(false);
       setSuccessSnackbarMessage('Company profile created successfully');
       setShowSuccessSnackbar(true);
-      router.push(`/company/${companyProfileAddress}`);
+      router.push(`/company/${newCompanyProfileAddress}`);
     } catch (error) {
       console.error(error);
       setFormLoading(false);
@@ -133,12 +141,12 @@ const CompanyForm = ({ isEdit = false }: Props) => {
   useEffect(() => {
     const setUp = async () => {
       if (isEdit) {
-        if (!contract) {
+        if (!companyProfileContract) {
           return;
         }
-        const logoCid = await contract.getLogoCid();
-        const name = await contract.getCompanyName();
-        const websiteUrl = await contract.getWebsiteUrl();
+        const logoCid = await companyProfileContract.getLogoCid();
+        const name = await companyProfileContract.getCompanyName();
+        const websiteUrl = await companyProfileContract.getWebsiteUrl();
         const asyncItr = await getFile(logoCid);
         if (!asyncItr) return;
         for await (const content of asyncItr) {
@@ -159,23 +167,7 @@ const CompanyForm = ({ isEdit = false }: Props) => {
     };
 
     setUp();
-  }, [contract, isEdit, getFile, getFileUrl]);
-
-  useEffect(() => {
-    console.log('Contract changed');
-  }, [contract]);
-
-  useEffect(() => {
-    console.log('isEdit changed');
-  }, [isEdit]);
-
-  useEffect(() => {
-    console.log('getFile changed');
-  }, [getFile]);
-
-  useEffect(() => {
-    console.log('getFileUrl changed');
-  }, [getFileUrl]);
+  }, [companyProfileContract, isEdit, getFile, getFileUrl]);
 
   return (
     <div>
@@ -229,9 +221,11 @@ const CompanyForm = ({ isEdit = false }: Props) => {
                   onChange={handleLogoChange}
                 />
               </Grid>
-              <Grid item xs={12}>
-                <Image src={logoPreview} alt="" width={100} height={100} />
-              </Grid>
+              {logoPreview && (
+                <Grid item xs={12}>
+                  <Image src={logoPreview} alt="" width={100} height={100} />
+                </Grid>
+              )}
               <Grid item xs={12}>
                 <Grid container>
                   <Grid item xs={6}>
@@ -241,7 +235,9 @@ const CompanyForm = ({ isEdit = false }: Props) => {
                       variant="contained"
                       sx={{ mt: 3, mr: 3, mb: 3 }}
                       disabled={isFormLoading}
-                      onClick={() => router.push(`/company/${id}`)}
+                      onClick={() =>
+                        router.push(`/company/${companyProfileAddress}`)
+                      }
                     >
                       Cancel
                     </Button>

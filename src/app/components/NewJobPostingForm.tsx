@@ -51,7 +51,7 @@ const EditorMarkdown = dynamic(
 const NewJobPostingForm = () => {
   const router = useRouter();
   const { uploadFile } = useIPFSFileUploader();
-  const { id = '' } = router.query;
+  const { companyProfileAddress = '' } = router.query;
   const [isFormLoading, setFormLoading] = React.useState(false);
   const [title, setTitle] = React.useState('');
   const [jobDescription, setJobDescription] = React.useState<string>(
@@ -66,7 +66,11 @@ const NewJobPostingForm = () => {
   const [snackbarMessage, setSnackbarMessage] = React.useState('');
   const [successSnackbarMessage, setSuccessSnackbarMessage] =
     React.useState('');
-  const contract = useCompanyProfileContract(Array.isArray(id) ? id[0] : id);
+  const contract = useCompanyProfileContract(
+    Array.isArray(companyProfileAddress)
+      ? companyProfileAddress[0]
+      : companyProfileAddress
+  );
   const [availableCountries, setAvailableCountries] =
     React.useState<CountryOptionType[]>();
   const [availableCities, setAvailableCities] =
@@ -112,7 +116,7 @@ const NewJobPostingForm = () => {
       setFormLoading(false);
       setSuccessSnackbarMessage('Job posting created successfully');
       setShowSuccessSnackbar(true);
-      router.push(`/company/${id}`);
+      router.push(`/company/${companyProfileAddress}`);
     } catch (error) {
       console.error(error);
       if (error instanceof ValidationError) {

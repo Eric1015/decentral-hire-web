@@ -47,11 +47,25 @@ const useIPFSFileUploader = () => {
     [client]
   );
 
+  const getFileContent = useCallback(
+    async (cid: string) => {
+      if (!client) {
+        return;
+      }
+      const chunks = [];
+      for await (const chunk of client.cat(cid)) {
+        chunks.push(chunk);
+      }
+      return Buffer.concat(chunks).toString();
+    },
+    [client]
+  );
+
   const getFileUrl = useCallback((cid: string) => {
     return `https://ipfs.io/ipfs/${cid}`;
   }, []);
 
-  return { uploadFile, getFile, getFileUrl };
+  return { uploadFile, getFile, getFileUrl, getFileContent };
 };
 
 export default useIPFSFileUploader;
