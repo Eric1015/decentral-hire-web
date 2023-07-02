@@ -1,7 +1,7 @@
 import { IWeb3Context, useWeb3Context } from '@/app/contexts/web3Context';
 import Grid from '@mui/material/Grid';
 import NotAuthorizedLayout from '@/app/components/NotAuthorizedLayout';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import useCompanyProfileContract from '@/app/hooks/useCompanyProfileContract';
 import { useRouter } from 'next/router';
 import Button from '@mui/material/Button';
@@ -26,10 +26,18 @@ export default function CompanyDetail() {
       : companyProfileAddress
   );
 
-  const [logoUrl, setLogoUrl] = useState<string>('');
+  const [logoCid, setLogoCid] = useState<string>('');
   const [companyName, setCompanyName] = useState<string>('');
   const [companyWebsiteUrl, setCompanyWebsiteUrl] = useState<string>('');
   const [activeJobPostings, setActiveJobPostings] = useState<any[]>([]);
+
+  const getCompanyProfileFromState = useCallback(() => {
+    return {
+      logoCid,
+      companyName,
+      websiteUrl: companyWebsiteUrl,
+    };
+  }, [logoCid, companyName, companyWebsiteUrl]);
 
   useEffect(() => {
     const getCompanyProfile = async () => {
@@ -40,7 +48,7 @@ export default function CompanyDetail() {
       const name = await contract.getCompanyName();
       const websiteUrl = await contract.getWebsiteUrl();
       const fetchedActiveJobPostings = await contract.listActiveJobPostings();
-      setLogoUrl(getFileUrl(logoCid));
+      setLogoCid(logoCid);
       setCompanyName(name);
       setCompanyWebsiteUrl(websiteUrl);
       setActiveJobPostings(fetchedActiveJobPostings);
@@ -58,7 +66,7 @@ export default function CompanyDetail() {
       <Grid container display="flex" alignItems="center">
         <Grid container>
           <Grid item xs={3}>
-            <Image width={200} height={200} src={logoUrl} alt="" />
+            <Image width={200} height={200} src={getFileUrl(logoCid)} alt="" />
           </Grid>
           <Grid item>
             <Grid container>
@@ -94,7 +102,10 @@ export default function CompanyDetail() {
               <Link
                 href={`/company/${companyProfileAddress}/postings/${jobPosting.jobPostingAddress}`}
               >
-                <JobPostingListItem jobPosting={jobPosting} />
+                <JobPostingListItem
+                  jobPosting={jobPosting}
+                  companyProfile={getCompanyProfileFromState()}
+                />
               </Link>
             </Grid>
           ))}

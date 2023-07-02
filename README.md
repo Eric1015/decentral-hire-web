@@ -11,6 +11,9 @@ Create an account at Infura: [website link](https://www.infura.io/) and obtain t
 # copy the .env.example to .env.local for actual usage
 cp .env.example .env.local
 
+# create the file to store your firebase config downloaded from firebase console
+touch public/firebase.config.ts
+
 # install required packages
 npm install
 

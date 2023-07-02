@@ -12,6 +12,7 @@
   "dependencies": {
     "@emotion/react": "^11.11.0",
     "@emotion/styled": "^11.11.0",
+    "@lit-protocol/lit-node-client": "^2.2.36",
     "@mui/icons-material": "^5.11.16",
     "@mui/lab": "^5.0.0-alpha.131",
     "@mui/material": "^5.13.2",
@@ -25,6 +26,7 @@
     "eslint": "8.41.0",
     "eslint-config-next": "13.4.4",
     "ethers": "^6.4.0",
+    "firebase": "^9.23.0",
     "ipfs-http-client": "^60.0.1",
     "mui-file-input": "^2.0.0",
     "next": "13.4.4",

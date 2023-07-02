@@ -13,11 +13,17 @@ import { JobPosting } from '@/app/types/JobPosting';
 import ReactMarkdown from 'react-markdown';
 import ConfirmationDialog from '@/app/components/ConfirmationDialog';
 import useCompanyProfileContract from '@/app/hooks/useCompanyProfileContract';
+import { ConnectedMode } from '@/app/hooks/useWeb3Provider';
+import ApplyForJobForm from '@/app/components/ApplyForJobForm';
+import useFirestore, {
+  SupportedCollectionName,
+} from '@/app/hooks/userFirestore';
+import { where } from 'firebase/firestore';
 
 export default function JobPostingDetail() {
   const router = useRouter();
   const {
-    state: { isAuthenticated, address },
+    state: { isAuthenticated, address, connectedMode },
   } = useWeb3Context() as IWeb3Context;
   const { companyProfileAddress = '', jobPostingAddress = '' } = router.query;
   const { getFileContent } = useIPFSFileUploader();
@@ -33,6 +39,9 @@ export default function JobPostingDetail() {
     useState(false);
   const [closeJobPostingReason, setCloseJobPostingReason] =
     useState<string>('');
+  const [isJobAlreadyApplied, setIsJobAlreadyApplied] =
+    useState<boolean>(false);
+  const { queryDocs } = useFirestore();
 
   const companyProfileContract = useCompanyProfileContract(
     Array.isArray(companyProfileAddress)
@@ -84,6 +93,31 @@ export default function JobPostingDetail() {
     getCompanyProfile();
   }, [contract, getFileContent]);
 
+  useEffect(() => {
+    const getApplicationStatus = async () => {
+      const data = await queryDocs(
+        SupportedCollectionName.JOB_APPLICATIONS,
+        undefined,
+        where('applicantAddress', '==', address?.toLowerCase()),
+        where(
+          'jobPostingAddress',
+          '==',
+          (Array.isArray(jobPostingAddress)
+            ? jobPostingAddress[0]
+            : jobPostingAddress
+          ).toLowerCase()
+        )
+      );
+      if (data.length > 0) {
+        setIsJobAlreadyApplied(true);
+      } else {
+        setIsJobAlreadyApplied(false);
+      }
+    };
+
+    getApplicationStatus();
+  }, [address, jobPostingAddress, queryDocs]);
+
   if (!isAuthenticated) {
     return <NotAuthorizedLayout />;
   }
@@ -98,15 +132,16 @@ export default function JobPostingDetail() {
                 {title}
               </Typography>
             </Box>
-            {owner.toLowerCase() === address?.toLowerCase() && (
-              <Button
-                color="error"
-                variant="contained"
-                onClick={handleJobPostingConfirmOpen}
-              >
-                Close Posting
-              </Button>
-            )}
+            {connectedMode === ConnectedMode.COMPANY &&
+              owner.toLowerCase() === address?.toLowerCase() && (
+                <Button
+                  color="error"
+                  variant="contained"
+                  onClick={handleJobPostingConfirmOpen}
+                >
+                  Close Posting
+                </Button>
+              )}
           </Grid>
         </Grid>
         <Grid item xs={12}>
@@ -133,6 +168,26 @@ export default function JobPostingDetail() {
             <ReactMarkdown>{description}</ReactMarkdown>
           </article>
         </Grid>
+        {connectedMode === ConnectedMode.APPLICANT &&
+          address?.toLowerCase() !== owner.toLowerCase() &&
+          !isJobAlreadyApplied && (
+            <Grid item xs={12} sx={{ mt: 10 }}>
+              <ApplyForJobForm
+                jobPostingAddress={
+                  Array.isArray(jobPostingAddress)
+                    ? jobPostingAddress[0]
+                    : jobPostingAddress
+                }
+              />
+            </Grid>
+          )}
+        {isJobAlreadyApplied && (
+          <Grid item xs={12} sx={{ mt: 10 }}>
+            <Typography component="h6" variant="h6">
+              You have already applied for this job
+            </Typography>
+          </Grid>
+        )}
       </Grid>
       <ConfirmationDialog
         isOpen={isCloseJobPostingDialogOpen}
