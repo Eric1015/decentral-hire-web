@@ -39,7 +39,7 @@ const ApplyForJobForm = ({ jobPostingAddress }: Props) => {
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     try {
-      if (!resume) {
+      if (!resume || !jobPostingContract) {
         return;
       }
       const jobPosting: JobPosting =
