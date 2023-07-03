@@ -24,6 +24,7 @@ const JobApplicationApplicantInfoListeItem = ({ jobApplication }: Props) => {
   const [isSendOfferClicked, setIsSendOfferClicked] = useState<boolean>(false);
   const [offerFile, setOfferFile] = useState<File | null>(null);
   const [isOfferSent, setIsOfferSent] = useState<boolean>(false);
+  const [isHired, setIsHired] = useState<boolean>(false);
   const [showSnackbar, setShowSnackbar] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState('');
   const [showSuccessSnackbar, setShowSuccessSnackbar] = useState(false);
@@ -90,6 +91,7 @@ const JobApplicationApplicantInfoListeItem = ({ jobApplication }: Props) => {
       await contract.hire(jobApplication.applicantAddress);
       setSuccessSnackbarMessage('Applicant hired successfully');
       setShowSuccessSnackbar(true);
+      setIsHired(true);
     } catch (error) {
       console.error(error);
       setSnackbarMessage(`Error hiring applicant: ${(error as Error).message}`);
@@ -138,7 +140,12 @@ const JobApplicationApplicantInfoListeItem = ({ jobApplication }: Props) => {
         );
       case ApplicationStatus.OfferAccepted:
         return (
-          <Button color="primary" variant="contained" onClick={handleHireClick}>
+          <Button
+            color="primary"
+            variant="contained"
+            onClick={handleHireClick}
+            disabled={isHired}
+          >
             Hire
           </Button>
         );

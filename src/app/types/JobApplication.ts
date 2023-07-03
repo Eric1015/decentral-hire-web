@@ -34,6 +34,7 @@ export class JobApplication {
   jobPostingAddress: string;
   companyProfileOwner: string;
   resumeCid: string;
+  offerCid: string;
   currentStatus: ApplicationStatus;
 
   constructor(
@@ -42,6 +43,7 @@ export class JobApplication {
     jobPostingAddress: string,
     companyProfileOwner: string,
     resumeCid: string,
+    offerCid: string,
     currentStatus: ApplicationStatus
   ) {
     this.jobApplicationAddress = jobApplicationAddress;
@@ -49,6 +51,7 @@ export class JobApplication {
     this.jobPostingAddress = jobPostingAddress;
     this.companyProfileOwner = companyProfileOwner;
     this.resumeCid = resumeCid;
+    this.offerCid = offerCid;
     this.currentStatus = currentStatus;
   }
 

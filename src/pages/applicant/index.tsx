@@ -32,12 +32,6 @@ export default function Applicant() {
   ] = useState<CompanyProfileAndJobPosting[]>([]);
   const { queryDocs } = useFirestore();
 
-  // needs to do this in order to prevent the default behavior of the button so the link behavior can be used
-  const handleApplicationsClick = (e: MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-  };
-
   useEffect(() => {
     const getJobPostings = async () => {
       const data = await queryDocs(
@@ -93,11 +87,7 @@ export default function Applicant() {
       <Grid container display="flex" alignItems="center">
         <Grid item sx={{ mt: 5, mb: 5 }} xs={12}>
           <Link href="/applicant/applications">
-            <Button
-              color="primary"
-              onClick={handleApplicationsClick}
-              variant="contained"
-            >
+            <Button color="primary" variant="contained">
               Your Applications
             </Button>
           </Link>

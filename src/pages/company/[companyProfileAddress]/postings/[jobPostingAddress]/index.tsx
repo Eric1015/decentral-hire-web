@@ -138,6 +138,7 @@ export default function JobPostingDetail() {
               jobApplication.jobPostingAddress,
               jobApplication.companyProfileOwner,
               jobApplication.resumeCid,
+              jobApplication.offerCid,
               toApplicationStatusNumber(jobApplication.applicationStatus)
             );
           }

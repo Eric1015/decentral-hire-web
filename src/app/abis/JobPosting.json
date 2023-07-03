@@ -363,6 +363,11 @@
           },
           {
             "internalType": "string",
+            "name": "offerCid",
+            "type": "string"
+          },
+          {
+            "internalType": "string",
             "name": "applicationStatus",
             "type": "string"
           }
@@ -519,11 +524,6 @@
     ],
     "name": "receivedApplications",
     "outputs": [
-      {
-        "internalType": "contract JobApplication",
-        "name": "jobApplication",
-        "type": "address"
-      },
       {
         "internalType": "address",
         "name": "jobApplicationAddress",

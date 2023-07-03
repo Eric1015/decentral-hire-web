@@ -14,7 +14,11 @@ import companyProfileAbi from '@/app/abis/CompanyProfile.json';
 import jobApplicationAbi from '@/app/abis/JobApplication.json';
 import jobPostingAbi from '@/app/abis/JobPosting.json';
 import { CompanyProfile } from '@/app/types/CompanyProfile';
-import { ApplicationStatus, JobApplication } from '@/app/types/JobApplication';
+import {
+  ApplicationStatus,
+  JobApplication,
+  toApplicationStatusNumber,
+} from '@/app/types/JobApplication';
 import JobApplicationListItem from '@/app/components/JobApplicationListItem';
 
 type CompanyProfileAndJobPostingAndJobApplication = {
@@ -36,10 +40,13 @@ export default function Applications() {
 
   useEffect(() => {
     const getJobApplications = async () => {
+      if (!address) {
+        return;
+      }
       const data = await queryDocs(
         SupportedCollectionName.JOB_APPLICATIONS,
         undefined,
-        where('applicantAddress', '==', address?.toLowerCase()),
+        where('applicantAddress', '==', address.toLowerCase()),
         orderBy('status', 'asc')
       );
       const jobApplicationsPromises = data.map(async (doc) => {
@@ -48,7 +55,8 @@ export default function Applications() {
           jobApplicationAbi,
           signer
         );
-        const resumeCid = await jobApplicationContract.getResume();
+        const fetchedJobApplication =
+          await jobApplicationContract.getJobApplicationMetadata();
         const jobPostingContract = new Contract(
           doc.jobPostingAddress,
           jobPostingAbi,
@@ -65,12 +73,13 @@ export default function Applications() {
         const logoCid = await companyProfileContract.getLogoCid();
         return {
           jobApplication: new JobApplication(
-            doc.contractAddress,
-            doc.applicantAddress,
-            doc.jobPostingAddress,
-            jobPosting.owner,
-            resumeCid,
-            doc.status as ApplicationStatus
+            fetchedJobApplication.jobApplicationAddress,
+            fetchedJobApplication.applicantAddress,
+            fetchedJobApplication.jobPostingAddress,
+            fetchedJobApplication.companyProfileOwner,
+            fetchedJobApplication.resumeCid,
+            fetchedJobApplication.offerCid,
+            toApplicationStatusNumber(fetchedJobApplication.applicationStatus)
           ),
           jobPosting,
           companyProfile: {
