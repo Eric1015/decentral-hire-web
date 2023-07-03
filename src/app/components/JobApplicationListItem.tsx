@@ -5,15 +5,21 @@ import Paper from '@mui/material/Paper';
 import Image from 'next/image';
 import { JobPosting } from '../types/JobPosting';
 import { CompanyProfile } from '../types/CompanyProfile';
+import { JobApplication } from '../types/JobApplication';
 import { Typography } from '@mui/material';
 import useIPFSFileUploader from '../hooks/useIPFSFileUploader';
 
 type Props = {
   jobPosting: JobPosting;
   companyProfile: CompanyProfile;
+  jobApplication: JobApplication;
 };
 
-const JobPostingListItem = ({ jobPosting, companyProfile }: Props) => {
+const JobApplicationListItem = ({
+  jobPosting,
+  companyProfile,
+  jobApplication,
+}: Props) => {
   const currentHiredCount = Number(jobPosting.currentHiredCount);
   const totalHiringCount = Number(jobPosting.totalHiringCount);
   const { getFileUrl } = useIPFSFileUploader();
@@ -39,7 +45,7 @@ const JobPostingListItem = ({ jobPosting, companyProfile }: Props) => {
               </Grid>
             </Grid>
           </Grid>
-          <Grid item xs={3}>
+          <Grid item xs={2}>
             {jobPosting.title}
           </Grid>
           <Grid item xs={3}>
@@ -56,10 +62,15 @@ const JobPostingListItem = ({ jobPosting, companyProfile }: Props) => {
               </Grid>
             </Grid>
           </Grid>
-          <Grid item xs={3}>
+          <Grid item xs={2}>
             {`${jobPosting.city}, ${jobPosting.country} ${
               jobPosting.isRemote ? '(Remote)' : ''
             }`}
+          </Grid>
+          <Grid item xs={2}>
+            <Typography component="h6" variant="h6">
+              {jobApplication.getDisplayableApplicationStatus()}
+            </Typography>
           </Grid>
         </Grid>
       </Container>
@@ -67,4 +78,4 @@ const JobPostingListItem = ({ jobPosting, companyProfile }: Props) => {
   );
 };
 
-export default JobPostingListItem;
+export default JobApplicationListItem;

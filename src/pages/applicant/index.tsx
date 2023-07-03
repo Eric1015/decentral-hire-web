@@ -1,8 +1,9 @@
 import { IWeb3Context, useWeb3Context } from '@/app/contexts/web3Context';
 import Grid from '@mui/material/Grid';
 import NotAuthorizedLayout from '@/app/components/NotAuthorizedLayout';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, MouseEvent } from 'react';
 import Typography from '@mui/material/Typography';
+import Button from '@mui/material/Button';
 import Link from 'next/link';
 import JobPostingListItem from '@/app/components/JobPostingListItem';
 import { JobPosting } from '@/app/types/JobPosting';
@@ -30,6 +31,12 @@ export default function Applicant() {
     setActiveJobPostingsWithCompanyProfile,
   ] = useState<CompanyProfileAndJobPosting[]>([]);
   const { queryDocs } = useFirestore();
+
+  // needs to do this in order to prevent the default behavior of the button so the link behavior can be used
+  const handleApplicationsClick = (e: MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+  };
 
   useEffect(() => {
     const getJobPostings = async () => {
@@ -84,7 +91,18 @@ export default function Applicant() {
   return (
     <main className="flex min-h-screen flex-col items-center justify-between p-24">
       <Grid container display="flex" alignItems="center">
-        <Grid item sx={{ mt: 10 }}>
+        <Grid item sx={{ mt: 5, mb: 5 }} xs={12}>
+          <Link href="/applicant/applications">
+            <Button
+              color="primary"
+              onClick={handleApplicationsClick}
+              variant="contained"
+            >
+              Your Applications
+            </Button>
+          </Link>
+        </Grid>
+        <Grid item sx={{ mt: 5 }} xs={12}>
           <Typography component="h4" variant="h4">
             Job Postings
           </Typography>

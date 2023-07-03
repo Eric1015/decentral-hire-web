@@ -146,6 +146,19 @@
     "type": "function"
   },
   {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_applicant",
+        "type": "address"
+      }
+    ],
+    "name": "decline",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
     "inputs": [],
     "name": "getCity",
     "outputs": [
@@ -322,9 +335,41 @@
     "name": "getReceivedApplications",
     "outputs": [
       {
-        "internalType": "contract JobApplication[]",
+        "components": [
+          {
+            "internalType": "address",
+            "name": "jobApplicationAddress",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "jobPostingAddress",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "applicantAddress",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "companyProfileOwner",
+            "type": "address"
+          },
+          {
+            "internalType": "string",
+            "name": "resumeCid",
+            "type": "string"
+          },
+          {
+            "internalType": "string",
+            "name": "applicationStatus",
+            "type": "string"
+          }
+        ],
+        "internalType": "struct JobApplicationMetadata[]",
         "name": "",
-        "type": "address[]"
+        "type": "tuple[]"
       }
     ],
     "stateMutability": "view",
@@ -388,6 +433,25 @@
         "internalType": "uint256",
         "name": "hiredDatetime",
         "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "hiredApplicantsArray",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
       }
     ],
     "stateMutability": "view",
@@ -477,9 +541,33 @@
   {
     "inputs": [
       {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "receivedApplicationsArray",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "address",
         "name": "_applicant",
         "type": "address"
+      },
+      {
+        "internalType": "string",
+        "name": "_offerCid",
+        "type": "string"
       }
     ],
     "name": "sendOffer",

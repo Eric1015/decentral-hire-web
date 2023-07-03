@@ -19,6 +19,11 @@ import useFirestore, {
   SupportedCollectionName,
 } from '@/app/hooks/userFirestore';
 import { where } from 'firebase/firestore';
+import {
+  JobApplication,
+  toApplicationStatusNumber,
+} from '@/app/types/JobApplication';
+import JobApplicationApplicantInfoListeItem from '@/app/components/JobApplicationApplicantInfoListItem';
 
 export default function JobPostingDetail() {
   const router = useRouter();
@@ -41,6 +46,9 @@ export default function JobPostingDetail() {
     useState<string>('');
   const [isJobAlreadyApplied, setIsJobAlreadyApplied] =
     useState<boolean>(false);
+  const [receivedJobApplications, setReceivedJobApplications] = useState<
+    JobApplication[]
+  >([]);
   const { queryDocs } = useFirestore();
 
   const companyProfileContract = useCompanyProfileContract(
@@ -94,7 +102,7 @@ export default function JobPostingDetail() {
   }, [contract, getFileContent]);
 
   useEffect(() => {
-    const getApplicationStatus = async () => {
+    const getApplicationStatusForApplicant = async () => {
       const data = await queryDocs(
         SupportedCollectionName.JOB_APPLICATIONS,
         undefined,
@@ -115,8 +123,33 @@ export default function JobPostingDetail() {
       }
     };
 
-    getApplicationStatus();
+    getApplicationStatusForApplicant();
   }, [address, jobPostingAddress, queryDocs]);
+
+  useEffect(() => {
+    const getReceivedApplicationsForCompany = async () => {
+      if (contract) {
+        const data = await contract.getReceivedApplications(0);
+        const receivedJobApplications: JobApplication[] = data.map(
+          (jobApplication: any) => {
+            return new JobApplication(
+              jobApplication.jobApplicationAddress,
+              jobApplication.applicantAddress,
+              jobApplication.jobPostingAddress,
+              jobApplication.companyProfileOwner,
+              jobApplication.resumeCid,
+              toApplicationStatusNumber(jobApplication.applicationStatus)
+            );
+          }
+        );
+        setReceivedJobApplications(receivedJobApplications);
+      } else {
+        setReceivedJobApplications([]);
+      }
+    };
+
+    getReceivedApplicationsForCompany();
+  }, [contract]);
 
   if (!isAuthenticated) {
     return <NotAuthorizedLayout />;
@@ -188,6 +221,18 @@ export default function JobPostingDetail() {
             </Typography>
           </Grid>
         )}
+        {connectedMode === ConnectedMode.COMPANY &&
+          address?.toLowerCase() === owner.toLowerCase() && (
+            <Grid item xs={12} sx={{ mt: 10 }}>
+              {receivedJobApplications.map((jobApplication) => (
+                <Grid item xs={12} key={jobApplication.jobApplicationAddress}>
+                  <JobApplicationApplicantInfoListeItem
+                    jobApplication={jobApplication}
+                  />
+                </Grid>
+              ))}
+            </Grid>
+          )}
       </Grid>
       <ConfirmationDialog
         isOpen={isCloseJobPostingDialogOpen}

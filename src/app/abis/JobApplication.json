@@ -129,6 +129,51 @@
   },
   {
     "inputs": [],
+    "name": "getJobApplicationMetadata",
+    "outputs": [
+      {
+        "components": [
+          {
+            "internalType": "address",
+            "name": "jobApplicationAddress",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "jobPostingAddress",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "applicantAddress",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "companyProfileOwner",
+            "type": "address"
+          },
+          {
+            "internalType": "string",
+            "name": "resumeCid",
+            "type": "string"
+          },
+          {
+            "internalType": "string",
+            "name": "applicationStatus",
+            "type": "string"
+          }
+        ],
+        "internalType": "struct JobApplicationMetadata",
+        "name": "",
+        "type": "tuple"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
     "name": "getJobPosting",
     "outputs": [
       {
@@ -181,13 +226,39 @@
   },
   {
     "inputs": [],
-    "name": "onReceiveHire",
+    "name": "offerCid",
+    "outputs": [
+      {
+        "internalType": "string",
+        "name": "",
+        "type": "string"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "onReceiveDecline",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
   },
   {
     "inputs": [],
+    "name": "onReceiveHire",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "string",
+        "name": "_offerCid",
+        "type": "string"
+      }
+    ],
     "name": "onReceiveOffer",
     "outputs": [],
     "stateMutability": "nonpayable",
