@@ -83,12 +83,12 @@ const CompanyForm = ({ isEdit = false }: Props) => {
       }
 
       const tx = isEdit
-        ? await companyProfileContract.updateCompanyProfile(
+        ? await companyProfileContract?.updateCompanyProfile(
             companyName,
             companyWebsite,
             newCompanyLogoCid
           )
-        : await decentralHireContract.createCompanyProfile(
+        : await decentralHireContract?.createCompanyProfile(
             companyName,
             companyWebsite,
             newCompanyLogoCid
