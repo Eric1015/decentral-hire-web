@@ -3,6 +3,8 @@ import Image from 'next/image';
 import logo from '@public/logo.svg';
 import Link from 'next/link';
 import { IWeb3Context, useWeb3Context } from '../contexts/web3Context';
+import { useState } from 'react';
+import ClearIcon from '@mui/icons-material/Clear';
 
 type Props = {
   children: React.ReactNode;
@@ -13,9 +15,26 @@ const HeaderWrapper = ({ children }: Props) => {
     disconnect,
     state: { isAuthenticated },
   } = useWeb3Context() as IWeb3Context;
+  const [isWarningBarOpen, setIsWarningBarOpen] = useState<boolean>(true);
+
   return (
     <div>
       <Box sx={{ flexGrow: 1 }}>
+        {isWarningBarOpen && (
+          // @ts-ignore
+          <AppBar position="static" color="error">
+            <Toolbar>
+              <Box display="flex" flexGrow={1}>
+                <p>
+                  Please note that this application is on Sepolia testnet and
+                  the data is subjected to removal or unaccessible from this
+                  website at any time.
+                </p>
+              </Box>
+              <ClearIcon onClick={() => setIsWarningBarOpen(false)} />
+            </Toolbar>
+          </AppBar>
+        )}
         <AppBar position="static" color="primary">
           <Toolbar>
             <Box display="flex" flexGrow={1}>
