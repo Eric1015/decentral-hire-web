@@ -113,26 +113,28 @@ export default function Application() {
 
   useEffect(() => {
     const getJobApplication = async () => {
-      const result = await jobApplicationContract.getJobApplicationMetadata();
-      const fetchedJobApplication = new JobApplication(
-        result.jobApplicationAddress,
-        result.applicantAddress,
-        result.jobPostingAddress,
-        result.companyProfileOwner,
-        result.resumeCid,
-        result.offerCid,
-        toApplicationStatusNumber(result.applicationStatus)
-      );
-      setJobApplication(fetchedJobApplication);
+      if (jobApplicationContract) {
+        const result = await jobApplicationContract.getJobApplicationMetadata();
+        const fetchedJobApplication = new JobApplication(
+          result.jobApplicationAddress,
+          result.applicantAddress,
+          result.jobPostingAddress,
+          result.companyProfileOwner,
+          result.resumeCid,
+          result.offerCid,
+          toApplicationStatusNumber(result.applicationStatus)
+        );
+        setJobApplication(fetchedJobApplication);
 
-      const jobPostingContract = new Contract(
-        result.jobPostingAddress,
-        jobPostingAbi,
-        signer
-      );
-      const fetchedJobPosting: JobPosting =
-        await jobPostingContract.getJobPostingMetadata();
-      setJobPosting(fetchedJobPosting);
+        const jobPostingContract = new Contract(
+          result.jobPostingAddress,
+          jobPostingAbi,
+          signer
+        );
+        const fetchedJobPosting: JobPosting =
+          await jobPostingContract.getJobPostingMetadata();
+        setJobPosting(fetchedJobPosting);
+      }
     };
 
     getJobApplication();

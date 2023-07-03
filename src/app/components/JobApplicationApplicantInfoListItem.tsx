@@ -71,6 +71,9 @@ const JobApplicationApplicantInfoListeItem = ({ jobApplication }: Props) => {
 
   const handleSendOffer = useCallback(async () => {
     try {
+      if (!contract) {
+        throw new Error('Contract not initialized');
+      }
       const cid = await encrypt(
         offerFile as File,
         jobApplication.applicantAddress
@@ -88,6 +91,9 @@ const JobApplicationApplicantInfoListeItem = ({ jobApplication }: Props) => {
 
   const handleHireClick = async () => {
     try {
+      if (!contract) {
+        throw new Error("Couldn't load contract");
+      }
       await contract.hire(jobApplication.applicantAddress);
       setSuccessSnackbarMessage('Applicant hired successfully');
       setShowSuccessSnackbar(true);
@@ -101,6 +107,9 @@ const JobApplicationApplicantInfoListeItem = ({ jobApplication }: Props) => {
 
   const handleDeclineClick = async () => {
     try {
+      if (!contract) {
+        throw new Error("Couldn't load contract");
+      }
       await contract.decline(jobApplication.applicantAddress);
       setSuccessSnackbarMessage('Applicant declined successfully');
       setShowSuccessSnackbar(true);

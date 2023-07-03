@@ -102,7 +102,7 @@ const CompanyForm = ({ isEdit = false }: Props) => {
         return;
       }
       const newCompanyProfileAddress =
-        await decentralHireContract.getCompanyProfileByOwner(address);
+        await decentralHireContract?.getCompanyProfileByOwner(address);
       setFormLoading(false);
       setSuccessSnackbarMessage('Company profile created successfully');
       setShowSuccessSnackbar(true);
