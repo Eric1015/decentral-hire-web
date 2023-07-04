@@ -1,18 +1,19 @@
 import { IWeb3Context, useWeb3Context } from '@/app/contexts/web3Context';
 import Grid from '@mui/material/Grid';
 import NotAuthorizedLayout from '@/app/components/NotAuthorizedLayout';
-import { useEffect, useState } from 'react';
+import { use, useEffect, useState } from 'react';
 import LinearProgress from '@mui/material/LinearProgress';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import { useRouter } from 'next/router';
 import Typography from '@mui/material/Typography';
+import Snackbar from '@mui/material/Snackbar';
+import Alert from '@mui/material/Alert';
 import useIPFSFileUploader from '@/app/hooks/useIPFSFileUploader';
 import useJobPostingContract from '@/app/hooks/useJobPostingContract';
 import { JobPosting } from '@/app/types/JobPosting';
 import ReactMarkdown from 'react-markdown';
 import ConfirmationDialog from '@/app/components/ConfirmationDialog';
-import useCompanyProfileContract from '@/app/hooks/useCompanyProfileContract';
 import { ConnectedMode } from '@/app/hooks/useWeb3Provider';
 import ApplyForJobForm from '@/app/components/ApplyForJobForm';
 import useFirestore, {
@@ -24,6 +25,7 @@ import {
   toApplicationStatusNumber,
 } from '@/app/types/JobApplication';
 import JobApplicationApplicantInfoListeItem from '@/app/components/JobApplicationApplicantInfoListItem';
+import useCompanyProfileContract from '@/app/hooks/useCompanyProfileContract';
 
 export default function JobPostingDetail() {
   const router = useRouter();
@@ -49,6 +51,11 @@ export default function JobPostingDetail() {
   const [receivedJobApplications, setReceivedJobApplications] = useState<
     JobApplication[]
   >([]);
+  const [isActive, setIsActive] = useState<boolean>(false);
+  const [showSnackbar, setShowSnackbar] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState('');
+  const [showSuccessSnackbar, setShowSuccessSnackbar] = useState(false);
+  const [successSnackbarMessage, setSuccessSnackbarMessage] = useState('');
   const { queryDocs } = useFirestore();
 
   const companyProfileContract = useCompanyProfileContract(
@@ -56,9 +63,17 @@ export default function JobPostingDetail() {
       ? companyProfileAddress[0]
       : companyProfileAddress
   );
-  const contract = useJobPostingContract(
+  const jobPostingContract = useJobPostingContract(
     Array.isArray(jobPostingAddress) ? jobPostingAddress[0] : jobPostingAddress
   );
+
+  const handleClose = () => {
+    setShowSnackbar(false);
+  };
+
+  const handleSuccessSnackbarClose = () => {
+    setShowSuccessSnackbar(false);
+  };
 
   const handleJobPostingConfirmOpen = () => {
     setIsCloseJobPostingDialogOpen(true);
@@ -69,22 +84,35 @@ export default function JobPostingDetail() {
   };
 
   const handleCloseJobPostingConfirm = async () => {
-    if (!companyProfileContract) {
-      return;
+    try {
+      if (!companyProfileContract) {
+        return;
+      }
+      await companyProfileContract.closeJobPosting(
+        Array.isArray(jobPostingAddress)
+          ? jobPostingAddress[0]
+          : jobPostingAddress,
+        closeJobPostingReason
+      );
+      setSuccessSnackbarMessage('Job posting closed successfully');
+      setShowSuccessSnackbar(true);
+      router.push(`/company/${companyProfileAddress}`);
+    } catch (error) {
+      console.error(error);
+      setSnackbarMessage(
+        `Error closing job posting: ${(error as Error).message}`
+      );
+      setShowSnackbar(true);
     }
-    await companyProfileContract.closePosting(
-      jobPostingAddress,
-      closeJobPostingReason
-    );
-    router.push(`/company/${companyProfileAddress}`);
   };
 
   useEffect(() => {
-    const getCompanyProfile = async () => {
-      if (!contract) {
+    const getJobPosting = async () => {
+      if (!jobPostingContract) {
         return;
       }
-      const jobPosting: JobPosting = await contract.getJobPostingMetadata();
+      const jobPosting: JobPosting =
+        await jobPostingContract.getJobPostingMetadata();
       const jobDescription = await getFileContent(
         jobPosting.jobDescriptionIpfsHash
       );
@@ -96,10 +124,11 @@ export default function JobPostingDetail() {
       setIsRemote(jobPosting.isRemote);
       setCurrentHiredCount(Number(jobPosting.currentHiredCount));
       setTotalHiringCount(Number(jobPosting.totalHiringCount));
+      setIsActive(jobPosting.isActive);
     };
 
-    getCompanyProfile();
-  }, [contract, getFileContent]);
+    getJobPosting();
+  }, [jobPostingContract, getFileContent]);
 
   useEffect(() => {
     const getApplicationStatusForApplicant = async () => {
@@ -128,8 +157,8 @@ export default function JobPostingDetail() {
 
   useEffect(() => {
     const getReceivedApplicationsForCompany = async () => {
-      if (contract) {
-        const data = await contract.getReceivedApplications(0);
+      if (jobPostingContract) {
+        const data = await jobPostingContract.getReceivedApplications(0);
         const receivedJobApplications: JobApplication[] = data.map(
           (jobApplication: any) => {
             return new JobApplication(
@@ -150,7 +179,7 @@ export default function JobPostingDetail() {
     };
 
     getReceivedApplicationsForCompany();
-  }, [contract]);
+  }, [jobPostingContract]);
 
   if (!isAuthenticated) {
     return <NotAuthorizedLayout />;
@@ -167,7 +196,8 @@ export default function JobPostingDetail() {
               </Typography>
             </Box>
             {connectedMode === ConnectedMode.COMPANY &&
-              owner.toLowerCase() === address?.toLowerCase() && (
+              owner.toLowerCase() === address?.toLowerCase() &&
+              isActive && (
                 <Button
                   color="error"
                   variant="contained"
@@ -176,6 +206,11 @@ export default function JobPostingDetail() {
                   Close Posting
                 </Button>
               )}
+            {!isActive && (
+              <Typography component="h6" variant="h6" color="error">
+                Closed
+              </Typography>
+            )}
           </Grid>
         </Grid>
         <Grid item xs={12}>
@@ -204,7 +239,8 @@ export default function JobPostingDetail() {
         </Grid>
         {connectedMode === ConnectedMode.APPLICANT &&
           address?.toLowerCase() !== owner.toLowerCase() &&
-          !isJobAlreadyApplied && (
+          !isJobAlreadyApplied &&
+          isActive && (
             <Grid item xs={12} sx={{ mt: 10 }}>
               <ApplyForJobForm
                 jobPostingAddress={
@@ -244,6 +280,28 @@ export default function JobPostingDetail() {
         reason={closeJobPostingReason}
         onReasonChange={setCloseJobPostingReason}
       />
+      <Snackbar
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+        open={showSnackbar}
+        onClose={handleClose}
+      >
+        <Alert onClose={handleClose} severity="error" sx={{ width: '100%' }}>
+          {snackbarMessage}
+        </Alert>
+      </Snackbar>
+      <Snackbar
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+        open={showSuccessSnackbar}
+        onClose={handleSuccessSnackbarClose}
+      >
+        <Alert
+          onClose={handleSuccessSnackbarClose}
+          severity="success"
+          sx={{ width: '100%' }}
+        >
+          {successSnackbarMessage}
+        </Alert>
+      </Snackbar>
     </main>
   );
 }

@@ -142,6 +142,46 @@
   },
   {
     "inputs": [],
+    "name": "getCompanyProfileMetadata",
+    "outputs": [
+      {
+        "components": [
+          {
+            "internalType": "address",
+            "name": "companyProfileAddress",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "owner",
+            "type": "address"
+          },
+          {
+            "internalType": "string",
+            "name": "name",
+            "type": "string"
+          },
+          {
+            "internalType": "string",
+            "name": "websiteUrl",
+            "type": "string"
+          },
+          {
+            "internalType": "string",
+            "name": "logoCid",
+            "type": "string"
+          }
+        ],
+        "internalType": "struct CompanyProfileMetadata",
+        "name": "",
+        "type": "tuple"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
     "name": "getLogoCid",
     "outputs": [
       {
