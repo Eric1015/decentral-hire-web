@@ -59,7 +59,7 @@ export default function Home() {
         if (connectedMode === ConnectedMode.COMPANY) {
           await directUserForCompanyMode();
           directUserForApplicantMode();
-        } else {
+        } else if (connectedMode === ConnectedMode.APPLICANT) {
           directUserForApplicantMode();
         }
       }

@@ -18,13 +18,14 @@ import {
 import { useRouter } from 'next/router';
 import useJobApplicationContract from '@/app/hooks/useJobApplicationContract';
 import useLitFileProvider from '@/app/hooks/useLitFileProvider';
+import { ConnectedMode } from '@/app/hooks/useWeb3Provider';
 
 export default function Application() {
   const router = useRouter();
   const downloadLink = useRef<HTMLAnchorElement>(null);
   const { jobApplicationAddress = '' } = router.query;
   const {
-    state: { isAuthenticated, signer, address },
+    state: { isAuthenticated, signer, connectedMode },
   } = useWeb3Context() as IWeb3Context;
   const jobApplicationContract = useJobApplicationContract(
     Array.isArray(jobApplicationAddress)
@@ -140,8 +141,12 @@ export default function Application() {
     getJobApplication();
   }, [jobApplicationContract, signer]);
 
-  if (!isAuthenticated) {
-    return <NotAuthorizedLayout />;
+  if (!isAuthenticated || connectedMode !== ConnectedMode.APPLICANT) {
+    return (
+      <main className="flex min-h-screen flex-col items-center justify-between p-24">
+        <NotAuthorizedLayout />
+      </main>
+    );
   }
 
   return (

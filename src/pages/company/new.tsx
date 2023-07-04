@@ -5,11 +5,12 @@ import CompanyForm from '@/app/components/CompanyForm';
 import { useEffect } from 'react';
 import useDecentralHireContract from '@/app/hooks/useDecentralHireContract';
 import { useRouter } from 'next/router';
+import { ConnectedMode } from '@/app/hooks/useWeb3Provider';
 
 export default function CompanyNew() {
   const router = useRouter();
   const {
-    state: { isAuthenticated, address },
+    state: { isAuthenticated, address, connectedMode },
   } = useWeb3Context() as IWeb3Context;
   const contract = useDecentralHireContract();
 
@@ -30,8 +31,12 @@ export default function CompanyNew() {
     setUp();
   }, [contract, router, address]);
 
-  if (!isAuthenticated) {
-    return <NotAuthorizedLayout />;
+  if (!isAuthenticated || connectedMode !== ConnectedMode.COMPANY) {
+    return (
+      <main className="flex min-h-screen flex-col items-center justify-between p-24">
+        <NotAuthorizedLayout />
+      </main>
+    );
   }
 
   return (

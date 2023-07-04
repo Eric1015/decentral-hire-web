@@ -10,7 +10,9 @@ const NotAuthorizedLayout = () => {
       <Grid item xs={12}>
         <h1>Not Authorized</h1>
         <p>You are not authorized to view this page.</p>
-        <Link href="/">Home</Link>
+        <Link href="/" style={{ color: '#42a5f5' }}>
+          Home
+        </Link>
       </Grid>
     </Grid>
   );

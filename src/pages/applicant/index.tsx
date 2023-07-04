@@ -1,7 +1,7 @@
 import { IWeb3Context, useWeb3Context } from '@/app/contexts/web3Context';
 import Grid from '@mui/material/Grid';
 import NotAuthorizedLayout from '@/app/components/NotAuthorizedLayout';
-import { useEffect, useState, MouseEvent } from 'react';
+import { useEffect, useState } from 'react';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
 import Link from 'next/link';
@@ -15,6 +15,7 @@ import { Contract } from 'ethers';
 import companyProfileAbi from '@/app/abis/CompanyProfile.json';
 import jobPostingAbi from '@/app/abis/JobPosting.json';
 import { CompanyProfile } from '@/app/types/CompanyProfile';
+import { ConnectedMode } from '@/app/hooks/useWeb3Provider';
 
 type CompanyProfileAndJobPosting = {
   companyProfile: CompanyProfile;
@@ -23,7 +24,7 @@ type CompanyProfileAndJobPosting = {
 
 export default function Applicant() {
   const {
-    state: { isAuthenticated, signer },
+    state: { isAuthenticated, signer, connectedMode },
   } = useWeb3Context() as IWeb3Context;
 
   const [
@@ -78,8 +79,12 @@ export default function Applicant() {
     getJobPostings();
   }, [queryDocs, signer]);
 
-  if (!isAuthenticated) {
-    return <NotAuthorizedLayout />;
+  if (!isAuthenticated || connectedMode !== ConnectedMode.APPLICANT) {
+    return (
+      <main className="flex min-h-screen flex-col items-center justify-between p-24">
+        <NotAuthorizedLayout />
+      </main>
+    );
   }
 
   return (

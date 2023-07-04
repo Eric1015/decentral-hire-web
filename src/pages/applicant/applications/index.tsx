@@ -20,6 +20,7 @@ import {
   toApplicationStatusNumber,
 } from '@/app/types/JobApplication';
 import JobApplicationListItem from '@/app/components/JobApplicationListItem';
+import { ConnectedMode } from '@/app/hooks/useWeb3Provider';
 
 type CompanyProfileAndJobPostingAndJobApplication = {
   companyProfile: CompanyProfile;
@@ -29,7 +30,7 @@ type CompanyProfileAndJobPostingAndJobApplication = {
 
 export default function Applications() {
   const {
-    state: { isAuthenticated, signer, address },
+    state: { isAuthenticated, signer, address, connectedMode },
   } = useWeb3Context() as IWeb3Context;
 
   const [
@@ -96,8 +97,12 @@ export default function Applications() {
     getJobApplications();
   }, [queryDocs, signer, address]);
 
-  if (!isAuthenticated) {
-    return <NotAuthorizedLayout />;
+  if (!isAuthenticated || connectedMode !== ConnectedMode.APPLICANT) {
+    return (
+      <main className="flex min-h-screen flex-col items-center justify-between p-24">
+        <NotAuthorizedLayout />
+      </main>
+    );
   }
 
   return (
